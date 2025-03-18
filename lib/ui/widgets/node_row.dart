@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lumberdash/lumberdash.dart';
+import 'package:memory_notes_organizer/models/node.dart';
+import 'package:memory_notes_organizer/providers.dart';
 import 'package:utilities/utilities.dart';
 
-import '../../../models/node.dart';
-import '../../../utils/utils.dart';
-import 'text_editor.dart';
-import '../../viewmodels/main_screen_model.dart';
-import '../main_functions.dart';
 import 'row_menu.dart';
+import 'text_editor.dart';
 
 class NodeRow extends ConsumerStatefulWidget {
   final Node currentNode;
@@ -24,34 +23,11 @@ class NodeRow extends ConsumerStatefulWidget {
 }
 
 class _NodeRowState extends ConsumerState<NodeRow> {
-  late MainFunctions mainFunctions;
-  late MainScreenModel mainScreenModel;
 
-  @override
-  void initState() {
-    mainFunctions = MainFunctions(mainFunctionCallback);
-    super.initState();
-  }
-
-  void mainFunctionCallback(CallbackType type, Object? data) {
-    // TODO - Do something with this?
-    switch (type) {
-      case CallbackType.add:
-        break;
-      case CallbackType.delete:
-        break;
-      case CallbackType.rename:
-        break;
-      case CallbackType.refresh:
-        break;
-    }
-    setState(() {});
-  }
-
+ 
   @override
   Widget build(BuildContext context) {
-    mainScreenModel = ref.watch(mainScreenModelProvider);
-    mainFunctions.build(ref);
+    var theme = ref.read(themeProvider);
     if (widget.selected) {
       return Container(
           decoration: createBlackBorderedBox(),
@@ -59,7 +35,7 @@ class _NodeRowState extends ConsumerState<NodeRow> {
               context,
               widget.currentNode,
               widget.index,
-              mainScreenModel.themeColors.inverseTextColor,
+              theme.inverseTextColor,
               true,
               widget.editing,
               widget.selected));
@@ -68,7 +44,7 @@ class _NodeRowState extends ConsumerState<NodeRow> {
           context,
           widget.currentNode,
           widget.index,
-          mainScreenModel.themeColors.textColor,
+          theme.textColor,
           false,
           widget.editing,
           widget.selected);
@@ -81,7 +57,7 @@ class _NodeRowState extends ConsumerState<NodeRow> {
       return Container();
     }
     if (index < 0 || index >= currentNode.children.length) {
-      logAndShowWidgetError(ref, 'Index $index not in the current nodes length of ${currentNode.children.length}');
+      logError('Index $index not in the current nodes length of ${currentNode.children.length}');
       return Container();
     }
     final childNode = currentNode.children[index];
@@ -112,9 +88,9 @@ class _NodeRowState extends ConsumerState<NodeRow> {
             editing: editing,
             changedListener: (newValue) {
               // logMessage('Change Listener: newvalue = $newValue');
-              mainScreenModel.editingRow = -1;
+              // mainScreenModel.editingRow = -1;
               if (newValue != null) {
-                mainScreenModel.updateName(childNode, newValue);
+                // mainScreenModel.updateName(childNode, newValue);
               }
             },
           ),
@@ -129,21 +105,21 @@ class _NodeRowState extends ConsumerState<NodeRow> {
   }
 
   void resetFlags() {
-    mainScreenModel.showNewFolder = false;
-    mainScreenModel.changeTheme = false;
-    mainScreenModel.showDeleteMenu = false;
+    // mainScreenModel.showNewFolder = false;
+    // mainScreenModel.changeTheme = false;
+    // mainScreenModel.showDeleteMenu = false;
   }
 
   Widget displayNextArrow(Node currentNode, int index) {
     final childNode = currentNode.children[index];
     if (childNode.children.isNotEmpty) {
-      final iconColor = index == mainScreenModel.currentlySelectedIndex
+      final iconColor = index == 1 // mainScreenModel.currentlySelectedIndex
           ? Colors.black
           : Colors.white;
       return IconButton(
         onPressed: () {
           resetFlags();
-          mainScreenModel.selectCurrentNode(childNode);
+          // mainScreenModel.selectCurrentNode(childNode);
         },
         icon: Icon(
           Icons.arrow_forward_ios,

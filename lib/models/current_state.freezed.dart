@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,223 +10,148 @@ part of 'current_state.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
-
-CurrentState _$CurrentStateFromJson(Map<String, dynamic> json) {
-  return _CurrentState.fromJson(json);
-}
 
 /// @nodoc
 mixin _$CurrentState {
-  String get currentFiles => throw _privateConstructorUsedError;
-  @JsonKey(includeIfNull: false)
-  int? get id => throw _privateConstructorUsedError;
-  @JsonKey(name: 'user_id', includeIfNull: false)
-  String? get userId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'last_updated', includeIfNull: false)
-  DateTime? get lastUpdated => throw _privateConstructorUsedError;
 
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
-  $CurrentStateCopyWith<CurrentState> get copyWith =>
-      throw _privateConstructorUsedError;
+ String get currentFiles;@JsonKey(includeIfNull: false) int? get id;@JsonKey(name: 'user_id', includeIfNull: false) String? get userId;@JsonKey(name: 'last_updated', includeIfNull: false) DateTime? get lastUpdated;
+/// Create a copy of CurrentState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$CurrentStateCopyWith<CurrentState> get copyWith => _$CurrentStateCopyWithImpl<CurrentState>(this as CurrentState, _$identity);
+
+  /// Serializes this CurrentState to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CurrentState&&(identical(other.currentFiles, currentFiles) || other.currentFiles == currentFiles)&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.lastUpdated, lastUpdated) || other.lastUpdated == lastUpdated));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,currentFiles,id,userId,lastUpdated);
+
+@override
+String toString() {
+  return 'CurrentState(currentFiles: $currentFiles, id: $id, userId: $userId, lastUpdated: $lastUpdated)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $CurrentStateCopyWith<$Res> {
-  factory $CurrentStateCopyWith(
-          CurrentState value, $Res Function(CurrentState) then) =
-      _$CurrentStateCopyWithImpl<$Res, CurrentState>;
-  @useResult
-  $Res call(
-      {String currentFiles,
-      @JsonKey(includeIfNull: false) int? id,
-      @JsonKey(name: 'user_id', includeIfNull: false) String? userId,
-      @JsonKey(name: 'last_updated', includeIfNull: false)
-      DateTime? lastUpdated});
-}
+abstract mixin class $CurrentStateCopyWith<$Res>  {
+  factory $CurrentStateCopyWith(CurrentState value, $Res Function(CurrentState) _then) = _$CurrentStateCopyWithImpl;
+@useResult
+$Res call({
+ String currentFiles,@JsonKey(includeIfNull: false) int? id,@JsonKey(name: 'user_id', includeIfNull: false) String? userId,@JsonKey(name: 'last_updated', includeIfNull: false) DateTime? lastUpdated
+});
 
+
+
+
+}
 /// @nodoc
-class _$CurrentStateCopyWithImpl<$Res, $Val extends CurrentState>
+class _$CurrentStateCopyWithImpl<$Res>
     implements $CurrentStateCopyWith<$Res> {
-  _$CurrentStateCopyWithImpl(this._value, this._then);
+  _$CurrentStateCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final CurrentState _self;
+  final $Res Function(CurrentState) _then;
 
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? currentFiles = null,
-    Object? id = freezed,
-    Object? userId = freezed,
-    Object? lastUpdated = freezed,
-  }) {
-    return _then(_value.copyWith(
-      currentFiles: null == currentFiles
-          ? _value.currentFiles
-          : currentFiles // ignore: cast_nullable_to_non_nullable
-              as String,
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      userId: freezed == userId
-          ? _value.userId
-          : userId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      lastUpdated: freezed == lastUpdated
-          ? _value.lastUpdated
-          : lastUpdated // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-    ) as $Val);
-  }
+/// Create a copy of CurrentState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? currentFiles = null,Object? id = freezed,Object? userId = freezed,Object? lastUpdated = freezed,}) {
+  return _then(_self.copyWith(
+currentFiles: null == currentFiles ? _self.currentFiles : currentFiles // ignore: cast_nullable_to_non_nullable
+as String,id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as int?,userId: freezed == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
+as String?,lastUpdated: freezed == lastUpdated ? _self.lastUpdated : lastUpdated // ignore: cast_nullable_to_non_nullable
+as DateTime?,
+  ));
 }
 
-/// @nodoc
-abstract class _$$CurrentStateImplCopyWith<$Res>
-    implements $CurrentStateCopyWith<$Res> {
-  factory _$$CurrentStateImplCopyWith(
-          _$CurrentStateImpl value, $Res Function(_$CurrentStateImpl) then) =
-      __$$CurrentStateImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {String currentFiles,
-      @JsonKey(includeIfNull: false) int? id,
-      @JsonKey(name: 'user_id', includeIfNull: false) String? userId,
-      @JsonKey(name: 'last_updated', includeIfNull: false)
-      DateTime? lastUpdated});
 }
 
-/// @nodoc
-class __$$CurrentStateImplCopyWithImpl<$Res>
-    extends _$CurrentStateCopyWithImpl<$Res, _$CurrentStateImpl>
-    implements _$$CurrentStateImplCopyWith<$Res> {
-  __$$CurrentStateImplCopyWithImpl(
-      _$CurrentStateImpl _value, $Res Function(_$CurrentStateImpl) _then)
-      : super(_value, _then);
-
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? currentFiles = null,
-    Object? id = freezed,
-    Object? userId = freezed,
-    Object? lastUpdated = freezed,
-  }) {
-    return _then(_$CurrentStateImpl(
-      currentFiles: null == currentFiles
-          ? _value.currentFiles
-          : currentFiles // ignore: cast_nullable_to_non_nullable
-              as String,
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      userId: freezed == userId
-          ? _value.userId
-          : userId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      lastUpdated: freezed == lastUpdated
-          ? _value.lastUpdated
-          : lastUpdated // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-    ));
-  }
-}
 
 /// @nodoc
 
 @JsonSerializable(explicitToJson: true)
-class _$CurrentStateImpl implements _CurrentState {
-  const _$CurrentStateImpl(
-      {required this.currentFiles,
-      @JsonKey(includeIfNull: false) this.id,
-      @JsonKey(name: 'user_id', includeIfNull: false) this.userId,
-      @JsonKey(name: 'last_updated', includeIfNull: false) this.lastUpdated});
+class _CurrentState implements CurrentState {
+  const _CurrentState({required this.currentFiles, @JsonKey(includeIfNull: false) this.id, @JsonKey(name: 'user_id', includeIfNull: false) this.userId, @JsonKey(name: 'last_updated', includeIfNull: false) this.lastUpdated});
+  factory _CurrentState.fromJson(Map<String, dynamic> json) => _$CurrentStateFromJson(json);
 
-  factory _$CurrentStateImpl.fromJson(Map<String, dynamic> json) =>
-      _$$CurrentStateImplFromJson(json);
+@override final  String currentFiles;
+@override@JsonKey(includeIfNull: false) final  int? id;
+@override@JsonKey(name: 'user_id', includeIfNull: false) final  String? userId;
+@override@JsonKey(name: 'last_updated', includeIfNull: false) final  DateTime? lastUpdated;
 
-  @override
-  final String currentFiles;
-  @override
-  @JsonKey(includeIfNull: false)
-  final int? id;
-  @override
-  @JsonKey(name: 'user_id', includeIfNull: false)
-  final String? userId;
-  @override
-  @JsonKey(name: 'last_updated', includeIfNull: false)
-  final DateTime? lastUpdated;
+/// Create a copy of CurrentState
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$CurrentStateCopyWith<_CurrentState> get copyWith => __$CurrentStateCopyWithImpl<_CurrentState>(this, _$identity);
 
-  @override
-  String toString() {
-    return 'CurrentState(currentFiles: $currentFiles, id: $id, userId: $userId, lastUpdated: $lastUpdated)';
-  }
-
-  @override
-  bool operator ==(dynamic other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$CurrentStateImpl &&
-            (identical(other.currentFiles, currentFiles) ||
-                other.currentFiles == currentFiles) &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.userId, userId) || other.userId == userId) &&
-            (identical(other.lastUpdated, lastUpdated) ||
-                other.lastUpdated == lastUpdated));
-  }
-
-  @JsonKey(ignore: true)
-  @override
-  int get hashCode =>
-      Object.hash(runtimeType, currentFiles, id, userId, lastUpdated);
-
-  @JsonKey(ignore: true)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$CurrentStateImplCopyWith<_$CurrentStateImpl> get copyWith =>
-      __$$CurrentStateImplCopyWithImpl<_$CurrentStateImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$CurrentStateImplToJson(
-      this,
-    );
-  }
+@override
+Map<String, dynamic> toJson() {
+  return _$CurrentStateToJson(this, );
 }
 
-abstract class _CurrentState implements CurrentState {
-  const factory _CurrentState(
-      {required final String currentFiles,
-      @JsonKey(includeIfNull: false) final int? id,
-      @JsonKey(name: 'user_id', includeIfNull: false) final String? userId,
-      @JsonKey(name: 'last_updated', includeIfNull: false)
-      final DateTime? lastUpdated}) = _$CurrentStateImpl;
-
-  factory _CurrentState.fromJson(Map<String, dynamic> json) =
-      _$CurrentStateImpl.fromJson;
-
-  @override
-  String get currentFiles;
-  @override
-  @JsonKey(includeIfNull: false)
-  int? get id;
-  @override
-  @JsonKey(name: 'user_id', includeIfNull: false)
-  String? get userId;
-  @override
-  @JsonKey(name: 'last_updated', includeIfNull: false)
-  DateTime? get lastUpdated;
-  @override
-  @JsonKey(ignore: true)
-  _$$CurrentStateImplCopyWith<_$CurrentStateImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CurrentState&&(identical(other.currentFiles, currentFiles) || other.currentFiles == currentFiles)&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.lastUpdated, lastUpdated) || other.lastUpdated == lastUpdated));
 }
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,currentFiles,id,userId,lastUpdated);
+
+@override
+String toString() {
+  return 'CurrentState(currentFiles: $currentFiles, id: $id, userId: $userId, lastUpdated: $lastUpdated)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$CurrentStateCopyWith<$Res> implements $CurrentStateCopyWith<$Res> {
+  factory _$CurrentStateCopyWith(_CurrentState value, $Res Function(_CurrentState) _then) = __$CurrentStateCopyWithImpl;
+@override @useResult
+$Res call({
+ String currentFiles,@JsonKey(includeIfNull: false) int? id,@JsonKey(name: 'user_id', includeIfNull: false) String? userId,@JsonKey(name: 'last_updated', includeIfNull: false) DateTime? lastUpdated
+});
+
+
+
+
+}
+/// @nodoc
+class __$CurrentStateCopyWithImpl<$Res>
+    implements _$CurrentStateCopyWith<$Res> {
+  __$CurrentStateCopyWithImpl(this._self, this._then);
+
+  final _CurrentState _self;
+  final $Res Function(_CurrentState) _then;
+
+/// Create a copy of CurrentState
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? currentFiles = null,Object? id = freezed,Object? userId = freezed,Object? lastUpdated = freezed,}) {
+  return _then(_CurrentState(
+currentFiles: null == currentFiles ? _self.currentFiles : currentFiles // ignore: cast_nullable_to_non_nullable
+as String,id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as int?,userId: freezed == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
+as String?,lastUpdated: freezed == lastUpdated ? _self.lastUpdated : lastUpdated // ignore: cast_nullable_to_non_nullable
+as DateTime?,
+  ));
+}
+
+
+}
+
+// dart format on

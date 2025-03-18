@@ -1,9 +1,11 @@
 
-import '../bloc/blocs/search_bloc.dart';
-import '../ui/tree/tree_node.dart';
+import 'package:memory_notes_organizer/models/selection_state.dart';
+import 'package:memory_notes_organizer/tree/tree_node.dart';
+
 import 'node.dart';
-import '../ui/viewmodels/main_screen_model.dart';
 import 'models.dart';
+
+const int rootId = -1;
 
 class UIState {
   bool changeTheme = false;

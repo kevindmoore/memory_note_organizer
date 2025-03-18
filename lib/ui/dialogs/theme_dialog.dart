@@ -1,25 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../main/main_functions.dart';
-import '../providers.dart';
+import 'package:memory_notes_organizer/providers.dart';
+import 'package:memory_notes_organizer/ui/widgets/theme_panel.dart';
 
-void showThemeDialog(BuildContext context, MainFunctions mainFunctions) {
+void showThemeDialog(BuildContext context) {
   Future.delayed(const Duration(seconds: 0), ()
   {
     if (context.mounted) {
       showDialog(
           context: context,
           builder: (context) {
-            return ThemeDialog(mainFunctions: mainFunctions);
+            return ThemeDialog();
           });
     }
   });
 }
 
 class ThemeDialog extends ConsumerStatefulWidget {
-  final MainFunctions mainFunctions;
 
-  const ThemeDialog({super.key, required this.mainFunctions});
+  const ThemeDialog({super.key});
 
   @override
   ConsumerState createState() => _ThemeDialogState();
@@ -35,7 +34,7 @@ class _ThemeDialogState extends ConsumerState<ThemeDialog> {
       content: SizedBox(
         width: query.size.width * 0.7,
         height: query.size.height * 0.7,
-        child: widget.mainFunctions.createThemePanel(),
+        child: ThemePanel(),
         ),
       actions: [
         TextButton(

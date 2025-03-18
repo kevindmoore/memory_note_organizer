@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:note_master/utils/utils.dart';
-
-import '../providers.dart';
+import 'package:memory_notes_organizer/providers.dart';
 
 class LogsDialog extends ConsumerStatefulWidget {
   const LogsDialog({super.key});

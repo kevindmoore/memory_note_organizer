@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:utilities/utilities.dart';
 
 import '../../providers.dart';
-import '../../viewmodels/main_screen_model.dart';
 
 NavigationRailDestination slideInNavigationItem({
   required double begin,
@@ -35,7 +34,7 @@ class Rails extends ConsumerStatefulWidget {
 }
 
 class _RailsState extends ConsumerState<Rails> with TickerProviderStateMixin {
-  late MainScreenModel mainScreenModel;
+  // late MainScreenModel mainScreenModel;
   late AnimationController _listIconSlideController;
   late AnimationController _searchIconSlideController;
   late AnimationController _themeIconSlideController;
@@ -73,11 +72,12 @@ class _RailsState extends ConsumerState<Rails> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    mainScreenModel = ref.watch(mainScreenModelProvider);
+    // mainScreenModel = ref.watch(mainScreenModelProvider);
+    var theme = ref.read(themeProvider);
     final navigationIndexProvider = ref.watch(navigationProvider.notifier);
     return Container(
-      decoration: createGradient(mainScreenModel.themeColors.startGradientColor,
-          mainScreenModel.themeColors.endGradientColor),
+      decoration: createGradient(theme.startGradientColor,
+          theme.endGradientColor),
       child: AdaptiveScaffold.standardNavigationRail(
         destinations: getRailNavigations(),
         onDestinationSelected: (int index) {
@@ -86,7 +86,7 @@ class _RailsState extends ConsumerState<Rails> with TickerProviderStateMixin {
           });
         },
         selectedIndex: navigationIndexProvider.getIndex(),
-        backgroundColor: mainScreenModel.themeColors.endGradientColor,
+        backgroundColor: theme.endGradientColor,
       ),
     );
   }

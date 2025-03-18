@@ -1,10 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:memory_notes_organizer/constants.dart';
+import 'package:memory_notes_organizer/providers.dart';
 
-import '../providers.dart';
 
 typedef NameCallBack = void Function(String?);
+
+void showNewDialog(WidgetRef ref, String title, NameCallBack callBack) {
+  final dialogState = ref.read(dialogStateProvider);
+  if (!dialogState.newItemDialogShowing) {
+    dialogState.newItemDialogShowing = true;
+    showDialog(
+      context: ref.read(appRouterProvider).navigatorKey.currentContext!,
+      builder: (context) =>
+          NewItemDialog(
+            title: newTodoString,
+            callBack: callBack,
+          ),
+    );
+  }
+}
 
 class NewItemDialog extends ConsumerStatefulWidget {
   final String title;

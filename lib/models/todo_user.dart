@@ -4,7 +4,7 @@ part 'todo_user.freezed.dart';
 part 'todo_user.g.dart';
 
 @freezed
-class TodoUser with _$TodoUser {
+abstract class TodoUser with _$TodoUser {
   const factory TodoUser({
     String? sessionId,
     required String email,

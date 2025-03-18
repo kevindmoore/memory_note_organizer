@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,229 +10,151 @@ part of 'todo_user.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
-
-TodoUser _$TodoUserFromJson(Map<String, dynamic> json) {
-  return _TodoUser.fromJson(json);
-}
 
 /// @nodoc
 mixin _$TodoUser {
-  String? get sessionId => throw _privateConstructorUsedError;
-  String get email => throw _privateConstructorUsedError;
-  String? get password => throw _privateConstructorUsedError;
-  String? get name => throw _privateConstructorUsedError;
-  String? get userId => throw _privateConstructorUsedError;
 
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
-  $TodoUserCopyWith<TodoUser> get copyWith =>
-      throw _privateConstructorUsedError;
+ String? get sessionId; String get email; String? get password; String? get name; String? get userId;
+/// Create a copy of TodoUser
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$TodoUserCopyWith<TodoUser> get copyWith => _$TodoUserCopyWithImpl<TodoUser>(this as TodoUser, _$identity);
+
+  /// Serializes this TodoUser to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TodoUser&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.email, email) || other.email == email)&&(identical(other.password, password) || other.password == password)&&(identical(other.name, name) || other.name == name)&&(identical(other.userId, userId) || other.userId == userId));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,sessionId,email,password,name,userId);
+
+@override
+String toString() {
+  return 'TodoUser(sessionId: $sessionId, email: $email, password: $password, name: $name, userId: $userId)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $TodoUserCopyWith<$Res> {
-  factory $TodoUserCopyWith(TodoUser value, $Res Function(TodoUser) then) =
-      _$TodoUserCopyWithImpl<$Res, TodoUser>;
-  @useResult
-  $Res call(
-      {String? sessionId,
-      String email,
-      String? password,
-      String? name,
-      String? userId});
-}
+abstract mixin class $TodoUserCopyWith<$Res>  {
+  factory $TodoUserCopyWith(TodoUser value, $Res Function(TodoUser) _then) = _$TodoUserCopyWithImpl;
+@useResult
+$Res call({
+ String? sessionId, String email, String? password, String? name, String? userId
+});
 
+
+
+
+}
 /// @nodoc
-class _$TodoUserCopyWithImpl<$Res, $Val extends TodoUser>
+class _$TodoUserCopyWithImpl<$Res>
     implements $TodoUserCopyWith<$Res> {
-  _$TodoUserCopyWithImpl(this._value, this._then);
+  _$TodoUserCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final TodoUser _self;
+  final $Res Function(TodoUser) _then;
 
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? sessionId = freezed,
-    Object? email = null,
-    Object? password = freezed,
-    Object? name = freezed,
-    Object? userId = freezed,
-  }) {
-    return _then(_value.copyWith(
-      sessionId: freezed == sessionId
-          ? _value.sessionId
-          : sessionId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      email: null == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String,
-      password: freezed == password
-          ? _value.password
-          : password // ignore: cast_nullable_to_non_nullable
-              as String?,
-      name: freezed == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String?,
-      userId: freezed == userId
-          ? _value.userId
-          : userId // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
-  }
+/// Create a copy of TodoUser
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? sessionId = freezed,Object? email = null,Object? password = freezed,Object? name = freezed,Object? userId = freezed,}) {
+  return _then(_self.copyWith(
+sessionId: freezed == sessionId ? _self.sessionId : sessionId // ignore: cast_nullable_to_non_nullable
+as String?,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
+as String,password: freezed == password ? _self.password : password // ignore: cast_nullable_to_non_nullable
+as String?,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String?,userId: freezed == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
 }
 
-/// @nodoc
-abstract class _$$TodoUserImplCopyWith<$Res>
-    implements $TodoUserCopyWith<$Res> {
-  factory _$$TodoUserImplCopyWith(
-          _$TodoUserImpl value, $Res Function(_$TodoUserImpl) then) =
-      __$$TodoUserImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {String? sessionId,
-      String email,
-      String? password,
-      String? name,
-      String? userId});
 }
 
-/// @nodoc
-class __$$TodoUserImplCopyWithImpl<$Res>
-    extends _$TodoUserCopyWithImpl<$Res, _$TodoUserImpl>
-    implements _$$TodoUserImplCopyWith<$Res> {
-  __$$TodoUserImplCopyWithImpl(
-      _$TodoUserImpl _value, $Res Function(_$TodoUserImpl) _then)
-      : super(_value, _then);
-
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? sessionId = freezed,
-    Object? email = null,
-    Object? password = freezed,
-    Object? name = freezed,
-    Object? userId = freezed,
-  }) {
-    return _then(_$TodoUserImpl(
-      sessionId: freezed == sessionId
-          ? _value.sessionId
-          : sessionId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      email: null == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String,
-      password: freezed == password
-          ? _value.password
-          : password // ignore: cast_nullable_to_non_nullable
-              as String?,
-      name: freezed == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String?,
-      userId: freezed == userId
-          ? _value.userId
-          : userId // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
-  }
-}
 
 /// @nodoc
 @JsonSerializable()
-class _$TodoUserImpl implements _TodoUser {
-  const _$TodoUserImpl(
-      {this.sessionId,
-      required this.email,
-      this.password,
-      this.name,
-      this.userId});
 
-  factory _$TodoUserImpl.fromJson(Map<String, dynamic> json) =>
-      _$$TodoUserImplFromJson(json);
+class _TodoUser implements TodoUser {
+  const _TodoUser({this.sessionId, required this.email, this.password, this.name, this.userId});
+  factory _TodoUser.fromJson(Map<String, dynamic> json) => _$TodoUserFromJson(json);
 
-  @override
-  final String? sessionId;
-  @override
-  final String email;
-  @override
-  final String? password;
-  @override
-  final String? name;
-  @override
-  final String? userId;
+@override final  String? sessionId;
+@override final  String email;
+@override final  String? password;
+@override final  String? name;
+@override final  String? userId;
 
-  @override
-  String toString() {
-    return 'TodoUser(sessionId: $sessionId, email: $email, password: $password, name: $name, userId: $userId)';
-  }
+/// Create a copy of TodoUser
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$TodoUserCopyWith<_TodoUser> get copyWith => __$TodoUserCopyWithImpl<_TodoUser>(this, _$identity);
 
-  @override
-  bool operator ==(dynamic other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$TodoUserImpl &&
-            (identical(other.sessionId, sessionId) ||
-                other.sessionId == sessionId) &&
-            (identical(other.email, email) || other.email == email) &&
-            (identical(other.password, password) ||
-                other.password == password) &&
-            (identical(other.name, name) || other.name == name) &&
-            (identical(other.userId, userId) || other.userId == userId));
-  }
-
-  @JsonKey(ignore: true)
-  @override
-  int get hashCode =>
-      Object.hash(runtimeType, sessionId, email, password, name, userId);
-
-  @JsonKey(ignore: true)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$TodoUserImplCopyWith<_$TodoUserImpl> get copyWith =>
-      __$$TodoUserImplCopyWithImpl<_$TodoUserImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$TodoUserImplToJson(
-      this,
-    );
-  }
+@override
+Map<String, dynamic> toJson() {
+  return _$TodoUserToJson(this, );
 }
 
-abstract class _TodoUser implements TodoUser {
-  const factory _TodoUser(
-      {final String? sessionId,
-      required final String email,
-      final String? password,
-      final String? name,
-      final String? userId}) = _$TodoUserImpl;
-
-  factory _TodoUser.fromJson(Map<String, dynamic> json) =
-      _$TodoUserImpl.fromJson;
-
-  @override
-  String? get sessionId;
-  @override
-  String get email;
-  @override
-  String? get password;
-  @override
-  String? get name;
-  @override
-  String? get userId;
-  @override
-  @JsonKey(ignore: true)
-  _$$TodoUserImplCopyWith<_$TodoUserImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TodoUser&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.email, email) || other.email == email)&&(identical(other.password, password) || other.password == password)&&(identical(other.name, name) || other.name == name)&&(identical(other.userId, userId) || other.userId == userId));
 }
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,sessionId,email,password,name,userId);
+
+@override
+String toString() {
+  return 'TodoUser(sessionId: $sessionId, email: $email, password: $password, name: $name, userId: $userId)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$TodoUserCopyWith<$Res> implements $TodoUserCopyWith<$Res> {
+  factory _$TodoUserCopyWith(_TodoUser value, $Res Function(_TodoUser) _then) = __$TodoUserCopyWithImpl;
+@override @useResult
+$Res call({
+ String? sessionId, String email, String? password, String? name, String? userId
+});
+
+
+
+
+}
+/// @nodoc
+class __$TodoUserCopyWithImpl<$Res>
+    implements _$TodoUserCopyWith<$Res> {
+  __$TodoUserCopyWithImpl(this._self, this._then);
+
+  final _TodoUser _self;
+  final $Res Function(_TodoUser) _then;
+
+/// Create a copy of TodoUser
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? sessionId = freezed,Object? email = null,Object? password = freezed,Object? name = freezed,Object? userId = freezed,}) {
+  return _then(_TodoUser(
+sessionId: freezed == sessionId ? _self.sessionId : sessionId // ignore: cast_nullable_to_non_nullable
+as String?,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
+as String,password: freezed == password ? _self.password : password // ignore: cast_nullable_to_non_nullable
+as String?,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String?,userId: freezed == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+
+}
+
+// dart format on

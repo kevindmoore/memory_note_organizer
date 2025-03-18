@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lumberdash/lumberdash.dart';
 import 'package:supa_manager/supa_manager.dart';
 
 import '../models/models.dart';
 import '../todos/todo_manager.dart';
-import '../utils/utils.dart';
 import 'model_table_entries.dart';
 import 'todo_table_handler.dart';
 
@@ -22,37 +22,37 @@ class CategoryTableHandler {
   Future<List<Category>?> loadCategoriesForFileId(int todoFileId) async {
     final result = await databaseRepository.readEntriesWhere(
         categoryTableData, todoFileIdName, todoFileId);
-    return result.when(success: (data) {
-      return data;
-    }, failure: (Exception error) {
-      logAndShowError(ref, error.toString());
-      return null;
-    }, errorMessage: (int code, String? message) {
-      logAndShowError(ref, message!);
-      return null;
-    });
+    switch (result) {
+      case Success(data: final data):
+        return data;
+      case Failure(error: final error):
+        logError( error.toString());
+      case ErrorMessage(message: final message, code: _):
+        logError( message!);
+    }
+    return null;
   }
 
   Future<List<Category>> getCategoriesWithFileId(int todoFileId) async {
     final result = await databaseRepository.readEntriesWhere(
         categoryTableData, todoFileIdName, todoFileId);
-    return await result.when(success: (data) async {
-      final categories = <Category>[];
-      await Future.forEach(data, (Category category) async {
-        final todos = await todoTableHandler.getTodosWithFileAndCategory(
-            todoFileId, category.id!);
-        category = category.copyWith(
-            todos: reorderTodos(todos), lastUpdated: DateTime.now());
-        categories.add(category);
-      });
-      return categories;
-    }, failure: (Exception error) {
-      logAndShowError(ref, error.toString());
-      return <Category>[];
-    }, errorMessage: (int code, String? message) {
-      logAndShowError(ref, message!);
-      return <Category>[];
-    });
+    switch (result) {
+      case Success(data: final data):
+        final categories = <Category>[];
+        await Future.forEach(data, (Category category) async {
+          final todos = await todoTableHandler.getTodosWithFileAndCategory(
+              todoFileId, category.id!);
+          category = category.copyWith(
+              todos: reorderTodos(todos), lastUpdated: DateTime.now());
+          categories.add(category);
+        });
+        return categories;
+      case Failure(error: final error):
+        logError( error.toString());
+      case ErrorMessage(message: final message, code: _):
+        logError( message!);
+    }
+    return <Category>[];
   }
 
   Future deleteCategory(Category category, bool removeFromList) async {
@@ -63,7 +63,7 @@ class CategoryTableHandler {
       await todoTableHandler.deleteTodo(todo, false);
     });
     final result = await databaseRepository.deleteTableEntry(
-        categoryTableData, CategoryTableEntry(category, category.todoFileId!));
+        categoryTableData, CategoryTableEntry(category, category.id!));
     // localRepo.deleteLocalCategory(category);
     return result;
   }
@@ -78,15 +78,15 @@ class CategoryTableHandler {
           updatedCategory.todoFileId!,
         ));
     // localRepo.updateLocalCategory(updatedCategory);
-    return result.when(success: (data) async {
-      return data;
-    }, failure: (Exception error) {
-      logAndShowError(ref, error.toString());
-      return null;
-    }, errorMessage: (int code, String? message) {
-      logAndShowError(ref, message!);
-      return null;
-    });
+    switch (result) {
+      case Success(data: final data):
+        return data;
+      case Failure(error: final error):
+        logError( error.toString());
+      case ErrorMessage(message: final message, code: _):
+        logError( message!);
+    }
+    return null;
   }
 
   Future<Category?> addNewCategory(int todoFileId, Category category) async {
@@ -94,22 +94,22 @@ class CategoryTableHandler {
         category.copyWith(todoFileId: todoFileId, lastUpdated: DateTime.now());
     final result = await databaseRepository.addEntry(
         categoryTableData, CategoryTableEntry(category, category.todoFileId!));
-    return await result.when(success: (data) async {
-      if (category.todoFileId == null) {
-        logAndShowError(
-            ref, 'addCategory: Category ${category.name} todo file id is null');
-      } else {
-        todoManager?.addCategory(category.todoFileId!, category);
-        // localRepo.addLocalCategory(category);
-      }
-      return data;
-    }, failure: (Exception error) {
-      logAndShowError(ref, error.toString());
-      return null;
-    }, errorMessage: (int code, String? message) {
-      logAndShowError(ref, message!);
-      return null;
-    });
+    switch (result) {
+      case Success(data: final data):
+        if (category.todoFileId == null) {
+          logError(
+              'addCategory: Category ${category.name} todo file id is null');
+        } else {
+          todoManager?.addCategory(category.todoFileId!, category);
+          // localRepo.addLocalCategory(category);
+        }
+        return data;
+      case Failure(error: final error):
+        logError( error.toString());
+      case ErrorMessage(message: final message, code: _):
+        logError( message!);
+    }
+    return null;
   }
 
   List<Todo> reorderTodos(List<Todo> todos) {

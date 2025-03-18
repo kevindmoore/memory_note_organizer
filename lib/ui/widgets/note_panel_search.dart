@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:memory_notes_organizer/models/current_todo_state.dart';
+import 'package:memory_notes_organizer/providers.dart';
 import 'package:utilities/utilities.dart';
 
-import '../../viewmodels/main_screen_model.dart';
 
 typedef StartSearchCallback = void Function(String);
 
@@ -27,11 +28,11 @@ class NotePanelSearch extends ConsumerStatefulWidget {
 }
 
 class _NotePanelSearchState extends ConsumerState<NotePanelSearch> {
-  late MainScreenModel mainScreenModel;
 
   @override
   Widget build(BuildContext context) {
-    mainScreenModel = ref.watch(mainScreenModelProvider);
+    var theme = ref.read(themeProvider);
+    CurrentTodoState currentTodoState = ref.watch(currentTodoStateProvider);
     return FocusTraversalGroup(
       policy: OrderedTraversalPolicy(),
       child: Column(
@@ -39,9 +40,9 @@ class _NotePanelSearchState extends ConsumerState<NotePanelSearch> {
           Row(mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-            Text(mainScreenModel.currentlySelectedTodo?.name ?? '',
+            Text(currentTodoState.currentTodo?.name ?? '',
                 style: getMediumTextStyle(
-                    mainScreenModel.themeColors.textColor))
+                    theme.textColor))
           ]),
           Row(mainAxisSize: MainAxisSize.max, children: [
             IconButton(

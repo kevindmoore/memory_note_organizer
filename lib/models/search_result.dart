@@ -1,4 +1,5 @@
-import 'package:note_master/models/todos.dart';
+import 'package:memory_notes_organizer/models/todos.dart';
+
 import 'categories.dart';
 
 enum SearchType { file, category, todo }

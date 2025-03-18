@@ -6,71 +6,54 @@ part of 'todos.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$TodoFileImpl _$$TodoFileImplFromJson(Map<String, dynamic> json) =>
-    _$TodoFileImpl(
-      name: json['name'] as String,
-      id: json['id'] as int?,
-      userId: json['userId'] as String?,
-      lastUpdated: json['last_updated'] == null
+_TodoFile _$TodoFileFromJson(Map<String, dynamic> json) => _TodoFile(
+  name: json['name'] as String,
+  id: (json['id'] as num?)?.toInt(),
+  userId: json['user_id'] as String?,
+  lastUpdated:
+      json['last_updated'] == null
           ? null
           : DateTime.parse(json['last_updated'] as String),
-    );
+);
 
-Map<String, dynamic> _$$TodoFileImplToJson(_$TodoFileImpl instance) {
-  final val = <String, dynamic>{
-    'name': instance.name,
-  };
+Map<String, dynamic> _$TodoFileToJson(_TodoFile instance) => <String, dynamic>{
+  'name': instance.name,
+  if (instance.id case final value?) 'id': value,
+  if (instance.userId case final value?) 'user_id': value,
+  if (instance.lastUpdated?.toIso8601String() case final value?)
+    'last_updated': value,
+};
 
-  void writeNotNull(String key, dynamic value) {
-    if (value != null) {
-      val[key] = value;
-    }
-  }
-
-  writeNotNull('id', instance.id);
-  writeNotNull('userId', instance.userId);
-  writeNotNull('last_updated', instance.lastUpdated?.toIso8601String());
-  return val;
-}
-
-_$TodoImpl _$$TodoImplFromJson(Map<String, dynamic> json) => _$TodoImpl(
-      done: json['done'] as bool? ?? false,
-      visible: json['visible'] as bool? ?? true,
-      expanded: json['expanded'] as bool? ?? false,
-      order: json['order'] as int? ?? 0,
-      name: json['name'] as String,
-      id: json['id'] as int?,
-      userId: json['userId'] as String?,
-      todoFileId: json['todoFileId'] as int?,
-      categoryId: json['categoryId'] as int?,
-      parentTodoId: json['parentTodoId'] as int?,
-      notes: json['notes'] as String? ?? '',
-      lastUpdated: json['last_updated'] == null
+_Todo _$TodoFromJson(Map<String, dynamic> json) => _Todo(
+  done: json['done'] as bool? ?? false,
+  visible: json['visible'] as bool? ?? true,
+  expanded: json['expanded'] as bool? ?? false,
+  order: (json['order'] as num?)?.toInt() ?? 0,
+  name: json['name'] as String,
+  id: (json['id'] as num?)?.toInt(),
+  userId: json['user_id'] as String?,
+  todoFileId: (json['todoFileId'] as num?)?.toInt(),
+  categoryId: (json['categoryId'] as num?)?.toInt(),
+  parentTodoId: (json['parentTodoId'] as num?)?.toInt(),
+  notes: json['notes'] as String? ?? '',
+  lastUpdated:
+      json['last_updated'] == null
           ? null
           : DateTime.parse(json['last_updated'] as String),
-    );
+);
 
-Map<String, dynamic> _$$TodoImplToJson(_$TodoImpl instance) {
-  final val = <String, dynamic>{
-    'done': instance.done,
-    'visible': instance.visible,
-    'expanded': instance.expanded,
-    'order': instance.order,
-    'name': instance.name,
-  };
-
-  void writeNotNull(String key, dynamic value) {
-    if (value != null) {
-      val[key] = value;
-    }
-  }
-
-  writeNotNull('id', instance.id);
-  writeNotNull('userId', instance.userId);
-  writeNotNull('todoFileId', instance.todoFileId);
-  writeNotNull('categoryId', instance.categoryId);
-  writeNotNull('parentTodoId', instance.parentTodoId);
-  val['notes'] = instance.notes;
-  writeNotNull('last_updated', instance.lastUpdated?.toIso8601String());
-  return val;
-}
+Map<String, dynamic> _$TodoToJson(_Todo instance) => <String, dynamic>{
+  'done': instance.done,
+  'visible': instance.visible,
+  'expanded': instance.expanded,
+  'order': instance.order,
+  'name': instance.name,
+  if (instance.id case final value?) 'id': value,
+  if (instance.userId case final value?) 'user_id': value,
+  if (instance.todoFileId case final value?) 'todoFileId': value,
+  if (instance.categoryId case final value?) 'categoryId': value,
+  if (instance.parentTodoId case final value?) 'parentTodoId': value,
+  'notes': instance.notes,
+  if (instance.lastUpdated?.toIso8601String() case final value?)
+    'last_updated': value,
+};

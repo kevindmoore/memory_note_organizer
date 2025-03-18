@@ -5,7 +5,7 @@ part 'path.freezed.dart';
 enum PathType { file, category, todo }
 
 @freezed
-class TodoPath with _$TodoPath {
+abstract class TodoPath with _$TodoPath {
   const factory TodoPath({
     required String name,
     required String todoId,
@@ -20,7 +20,7 @@ class TodoPath with _$TodoPath {
 }
 
 @freezed
-class CategoryPath with _$CategoryPath {
+abstract class CategoryPath with _$CategoryPath {
   const factory CategoryPath(
       {
         required String name,
@@ -34,7 +34,7 @@ class CategoryPath with _$CategoryPath {
 }
 
 @freezed
-class FilePath with _$FilePath {
+abstract class FilePath with _$FilePath {
   const factory FilePath(
       {
         required String name,
@@ -48,7 +48,7 @@ class FilePath with _$FilePath {
 }
 
 @freezed
-class Path with _$Path {
+abstract class Path with _$Path {
   const Path._();
 
   const factory Path({
@@ -65,7 +65,7 @@ class Path with _$Path {
 }
 
 @freezed
-class UIPath with _$UIPath {
+abstract class UIPath with _$UIPath {
   const UIPath._();
 
   const factory UIPath({

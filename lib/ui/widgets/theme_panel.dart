@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:memory_notes_organizer/providers.dart';
 import 'package:utilities/utilities.dart';
 
 import '../../theme/theme.dart';
-import '../../viewmodels/main_screen_model.dart';
-import '../main_functions.dart';
 
 class ThemePanel extends ConsumerStatefulWidget {
-  final MainScreenModel mainScreenModel;
-  final StateChangeCallback? callback;
-  const ThemePanel(this.mainScreenModel, this.callback, {super.key});
+  const ThemePanel({super.key});
 
   @override
   ConsumerState<ThemePanel> createState() => _ThemePanelState();
@@ -72,8 +69,7 @@ class _ThemePanelState extends ConsumerState<ThemePanel> {
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: () {
-        widget.mainScreenModel.themeManager.setThemeColor(colors);
-        widget.callback?.call(CallbackType.refresh, null);
+        ref.read(themeProvider.notifier).setThemeColor(colors);
       },
       child: Card(
         child: Padding(

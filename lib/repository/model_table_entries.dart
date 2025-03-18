@@ -1,5 +1,7 @@
-import 'package:note_master/models/models.dart';
 import 'package:supa_manager/supa_manager.dart';
+import 'package:memory_notes_organizer/models/categories.dart';
+import 'package:memory_notes_organizer/models/current_state.dart';
+import 'package:memory_notes_organizer/models/todos.dart';
 
 const todoFileTableName = 'TodoFiles';
 const categoryTableName = 'Categories';

@@ -11,7 +11,7 @@ List<Map<String, dynamic>> currentStateToDatabaseJson(CurrentState currentState,
 }
 
 @freezed
-class CurrentState with _$CurrentState {
+abstract class CurrentState with _$CurrentState {
   @JsonSerializable(explicitToJson: true)
   const factory CurrentState({
     required String currentFiles,

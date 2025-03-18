@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:note_master/bloc/blocs/search_bloc.dart';
-import 'package:note_master/models/search_result.dart';
-import 'package:note_master/todos/todo_manager.dart';
+import 'package:memory_notes_organizer/models/search_result.dart';
+import 'package:memory_notes_organizer/providers.dart';
+import 'package:memory_notes_organizer/todos/todo_manager.dart';
 import 'package:utilities/utilities.dart';
 
-import '../providers.dart';
+void showSearchDialog(WidgetRef ref) {
+  final dialogState = ref.read(dialogStateProvider);
+  if (!dialogState.searchDialogShowing) {
+    dialogState.searchDialogShowing = true;
+    showDialog(context: ref.read(appRouterProvider).navigatorKey.currentContext!,
+        builder: (context) => const SearchDialog());
+  }
+}
 
 class SearchDialog extends ConsumerStatefulWidget {
   const SearchDialog({super.key});
@@ -143,7 +150,6 @@ class _SearchDialogState extends ConsumerState<SearchDialog> {
   }
 
   void startSearch(BuildContext context, String text, TodoManager todoManager) {
-    ref.read(searchBlocProvider).add(const SearchEvent.searchStartEvent());
     final results = todoManager.search(text);
     setState(() {
       searchResults = results;
@@ -227,9 +233,6 @@ class _SearchDialogState extends ConsumerState<SearchDialog> {
                     ),
                   ),
                   onTap: () {
-                    ref
-                        .read(searchBlocProvider)
-                        .add(SearchEvent.searchEventResult(result));
                     final dialogState = ref.read(dialogStateProvider);
                     dialogState.searchDialogShowing = false;
                     ref.read(searchBus).fire(result);

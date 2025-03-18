@@ -13,7 +13,7 @@ List<Map<String, dynamic>> categoryToDatabaseJson(
 }
 
 @Freezed(makeCollectionsUnmodifiable: false)
-class Category with _$Category {
+abstract class Category with _$Category {
   @JsonSerializable(explicitToJson: true)
   const factory Category({
     required String name,

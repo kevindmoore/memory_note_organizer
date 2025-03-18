@@ -6,31 +6,22 @@ part of 'categories.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$CategoryImpl _$$CategoryImplFromJson(Map<String, dynamic> json) =>
-    _$CategoryImpl(
-      name: json['name'] as String,
-      id: json['id'] as int?,
-      todoFileId: json['todoFileId'] as int?,
-      userId: json['user_id'] as String?,
-      lastUpdated: json['last_updated'] == null
+_Category _$CategoryFromJson(Map<String, dynamic> json) => _Category(
+  name: json['name'] as String,
+  id: (json['id'] as num?)?.toInt(),
+  todoFileId: (json['todoFileId'] as num?)?.toInt(),
+  userId: json['user_id'] as String?,
+  lastUpdated:
+      json['last_updated'] == null
           ? null
           : DateTime.parse(json['last_updated'] as String),
-    );
+);
 
-Map<String, dynamic> _$$CategoryImplToJson(_$CategoryImpl instance) {
-  final val = <String, dynamic>{
-    'name': instance.name,
-  };
-
-  void writeNotNull(String key, dynamic value) {
-    if (value != null) {
-      val[key] = value;
-    }
-  }
-
-  writeNotNull('id', instance.id);
-  writeNotNull('todoFileId', instance.todoFileId);
-  writeNotNull('user_id', instance.userId);
-  writeNotNull('last_updated', instance.lastUpdated?.toIso8601String());
-  return val;
-}
+Map<String, dynamic> _$CategoryToJson(_Category instance) => <String, dynamic>{
+  'name': instance.name,
+  if (instance.id case final value?) 'id': value,
+  if (instance.todoFileId case final value?) 'todoFileId': value,
+  if (instance.userId case final value?) 'user_id': value,
+  if (instance.lastUpdated?.toIso8601String() case final value?)
+    'last_updated': value,
+};

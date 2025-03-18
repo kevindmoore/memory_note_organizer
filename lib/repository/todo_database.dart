@@ -1,11 +1,11 @@
 
 import 'dart:async';
 
+import 'package:lumberdash/lumberdash.dart';
 import 'package:supa_manager/supa_manager.dart';
+import 'package:memory_notes_organizer/repository/model_table_entries.dart';
 
-import '../logging/log_client.dart';
 import '../models/models.dart';
-import 'model_table_entries.dart';
 
 class TodoDatabase {
   final SupaDatabaseManager databaseRepository;
@@ -32,56 +32,58 @@ class TodoDatabase {
 
   Future<String?> getCurrentFilesString() async {
     final result = await databaseRepository.readEntries(currentStateTableData);
-    return result.when(success: (data) {
-      if (data is List<CurrentState>) {
+    switch (result) {
+      case Success(data: final data):
         if (data.isNotEmpty) {
           return data[0].currentFiles;
         }
-      }
-      return null;
-    }, failure: (Exception error) {
-      logSystemError(error.toString());
-      return null;
-    }, errorMessage: (int code, String? message) {
-      logSystemError(message);
-      return null;
-    });
+        return null;
+      case Failure(error: final error):
+        logError( error.toString());
+      case ErrorMessage(message: final message, code: _):
+        logError( message!);
+    }
+    return null;
   }
 
   Future loadTodoFileCategoriesAndTodos(int todoFileId) async {
-    final result =
-    await databaseRepository.readEntry(todoFileTableData, todoFileId);
-    await result.when(success: (data) async {
-      final categories = await getCategoriesWithFileId(data.id);
-      if (categories.isNotEmpty) {
-        data = data.copyWith(categories: categories);
-      }
-      remoteTodoFiles.addTodoFile(data);
-    }, failure: (Exception error) {
-      logSystemError(error.toString());
-    }, errorMessage: (int code, String? message) {
-      logSystemError(message!);
-    });
+    final result = await databaseRepository.readEntry(todoFileTableData, todoFileId);
+    switch (result) {
+      case Success(data: TodoFile? data):
+        if (data == null) {
+          logError( 'loadTodoFileCategoriesAndTodos: TodoFile not found for $todoFileId');
+          return;
+        }
+        final categories = await getCategoriesWithFileId(data.id!);
+        if (categories.isNotEmpty) {
+          data = data.copyWith(categories: categories);
+        }
+        remoteTodoFiles.addTodoFile(data);
+      case Failure(error: final error):
+        logError( error.toString());
+      case ErrorMessage(message: final message, code: _):
+        logError( message!);
+    }
   }
 
   Future<List<Category>> getCategoriesWithFileId(int todoFileId) async {
     final result = await databaseRepository.readEntriesWhere(
         categoryTableData, todoFileIdName, todoFileId);
-    return await result.when(success: (data) async {
-      final categories = <Category>[];
-      await Future.forEach(data, (Category category) async {
-        final todos = await getTodosWithFileAndCategory(todoFileId, category.id!);
-        category = category.copyWith(todos: _reorderTodos(todos));
-        categories.add(category);
-      });
-      return categories;
-    }, failure: (Exception error) {
-      logSystemError(error.toString());
-      return <Category>[];
-    }, errorMessage: (int code, String? message) {
-      logSystemError(message!);
-      return <Category>[];
-    });
+    switch (result) {
+      case Success(data: final data):
+        final categories = <Category>[];
+        await Future.forEach(data, (Category category) async {
+          final todos = await getTodosWithFileAndCategory(todoFileId, category.id!);
+          category = category.copyWith(todos: _reorderTodos(todos));
+          categories.add(category);
+        });
+        return categories;
+      case Failure(error: final error):
+        logError( error.toString());
+      case ErrorMessage(message: final message, code: _):
+        logError( message!);
+    }
+    return <Category>[];
   }
 
   Future<List<Todo>> getTodosWithFileAndCategory(int todoFileId, int categoryId) async {
@@ -89,15 +91,15 @@ class TodoDatabase {
       SelectEntry.and(todoFileIdName, todoFileId.toString()),
       SelectEntry.and(categoryIdName, categoryId.toString()),
     ]);
-    return result.when(success: (data) {
-      return data;
-    }, failure: (Exception error) {
-      logSystemError(error.toString());
-      return <Todo>[];
-    }, errorMessage: (int code, String? message) {
-      logSystemError(message!);
-      return <Todo>[];
-    });
+    switch (result) {
+      case Success(data: final data):
+        return data;
+      case Failure(error: final error):
+        logError( error.toString());
+      case ErrorMessage(message: final message, code: _):
+        logError( message!);
+    }
+    return <Todo>[];
   }
 
   List<Todo> _reorderTodos(List<Todo> todos) {
@@ -154,13 +156,15 @@ class TodoDatabase {
     todo.copyWith(todoFileId: todoFileId, categoryId: categoryId);
     final result = await databaseRepository.addEntry(
         todoTableData, TodoTableEntry(updatedTodo, todoFileId, categoryId));
-    return result.when(success: (data) {
-      return Result.success(data);
-    }, failure: (Exception error) {
-      return Result.errorMessage(99,  error.toString());
-    }, errorMessage: (int code, String? message) {
-      return Result.errorMessage(99,  message!);
-    });
+    switch (result) {
+      case Success(data: final data):
+        return Result.success(data);
+      case Failure(error: final error):
+        logError( error.toString());
+      case ErrorMessage(message: final message, code: _):
+        logError( message!);
+    }
+    return result;
   }
 
   Future<Result<Todo?>> addNewTodo(Todo todo, int todoFileId, int categoryId) async {
@@ -169,13 +173,15 @@ class TodoDatabase {
     final result = await databaseRepository.addEntry(
         todoTableData, TodoTableEntry(updatedTodo, todoFileId, categoryId));
 
-    return result.when(success: (data) {
-      return Result.success(data);
-    }, failure: (Exception error) {
-      return Result.errorMessage(99,  error.toString());
-    }, errorMessage: (int code, String? message) {
-      return Result.errorMessage(99,  message!);
-    });
+    switch (result) {
+      case Success(data: final data):
+        return Result.success(data);
+      case Failure(error: final error):
+        logError( error.toString());
+      case ErrorMessage(message: final message, code: _):
+        logError( message!);
+    }
+    return result;
   }
 
   Future<Result<Todo?>> addNewTodoToParent(
@@ -190,13 +196,15 @@ class TodoDatabase {
         todoFileId: todoFileId, categoryId: categoryId, parentTodoId: parentId);
     final result = await databaseRepository.addEntry(
         todoTableData, TodoTableEntry(updatedTodo, todoFileId, categoryId));
-    return result.when(success: (data) {
-      return Result.success(data);
-    }, failure: (Exception error) {
-      return Result.errorMessage(99,  error.toString());
-    }, errorMessage: (int code, String? message) {
-      return Result.errorMessage(99,  message!);
-    });
+    switch (result) {
+      case Success(data: final data):
+        return Result.success(data);
+      case Failure(error: final error):
+        logError( error.toString());
+      case ErrorMessage(message: final message, code: _):
+        logError( message!);
+    }
+    return result;
   }
 
 }

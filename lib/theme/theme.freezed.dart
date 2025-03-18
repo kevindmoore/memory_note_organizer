@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,193 +10,142 @@ part of 'theme.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
-
 /// @nodoc
 mixin _$ThemeColors {
-  Color get startGradientColor => throw _privateConstructorUsedError;
-  Color get endGradientColor => throw _privateConstructorUsedError;
-  Color get textColor => throw _privateConstructorUsedError;
-  Color get inverseTextColor => throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
-  $ThemeColorsCopyWith<ThemeColors> get copyWith =>
-      throw _privateConstructorUsedError;
+ Color get startGradientColor; Color get endGradientColor; Color get textColor; Color get inverseTextColor;
+/// Create a copy of ThemeColors
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ThemeColorsCopyWith<ThemeColors> get copyWith => _$ThemeColorsCopyWithImpl<ThemeColors>(this as ThemeColors, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ThemeColors&&(identical(other.startGradientColor, startGradientColor) || other.startGradientColor == startGradientColor)&&(identical(other.endGradientColor, endGradientColor) || other.endGradientColor == endGradientColor)&&(identical(other.textColor, textColor) || other.textColor == textColor)&&(identical(other.inverseTextColor, inverseTextColor) || other.inverseTextColor == inverseTextColor));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,startGradientColor,endGradientColor,textColor,inverseTextColor);
+
+@override
+String toString() {
+  return 'ThemeColors(startGradientColor: $startGradientColor, endGradientColor: $endGradientColor, textColor: $textColor, inverseTextColor: $inverseTextColor)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $ThemeColorsCopyWith<$Res> {
-  factory $ThemeColorsCopyWith(
-          ThemeColors value, $Res Function(ThemeColors) then) =
-      _$ThemeColorsCopyWithImpl<$Res, ThemeColors>;
-  @useResult
-  $Res call(
-      {Color startGradientColor,
-      Color endGradientColor,
-      Color textColor,
-      Color inverseTextColor});
-}
+abstract mixin class $ThemeColorsCopyWith<$Res>  {
+  factory $ThemeColorsCopyWith(ThemeColors value, $Res Function(ThemeColors) _then) = _$ThemeColorsCopyWithImpl;
+@useResult
+$Res call({
+ Color startGradientColor, Color endGradientColor, Color textColor, Color inverseTextColor
+});
 
+
+
+
+}
 /// @nodoc
-class _$ThemeColorsCopyWithImpl<$Res, $Val extends ThemeColors>
+class _$ThemeColorsCopyWithImpl<$Res>
     implements $ThemeColorsCopyWith<$Res> {
-  _$ThemeColorsCopyWithImpl(this._value, this._then);
+  _$ThemeColorsCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final ThemeColors _self;
+  final $Res Function(ThemeColors) _then;
 
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? startGradientColor = null,
-    Object? endGradientColor = null,
-    Object? textColor = null,
-    Object? inverseTextColor = null,
-  }) {
-    return _then(_value.copyWith(
-      startGradientColor: null == startGradientColor
-          ? _value.startGradientColor
-          : startGradientColor // ignore: cast_nullable_to_non_nullable
-              as Color,
-      endGradientColor: null == endGradientColor
-          ? _value.endGradientColor
-          : endGradientColor // ignore: cast_nullable_to_non_nullable
-              as Color,
-      textColor: null == textColor
-          ? _value.textColor
-          : textColor // ignore: cast_nullable_to_non_nullable
-              as Color,
-      inverseTextColor: null == inverseTextColor
-          ? _value.inverseTextColor
-          : inverseTextColor // ignore: cast_nullable_to_non_nullable
-              as Color,
-    ) as $Val);
-  }
+/// Create a copy of ThemeColors
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? startGradientColor = null,Object? endGradientColor = null,Object? textColor = null,Object? inverseTextColor = null,}) {
+  return _then(_self.copyWith(
+startGradientColor: null == startGradientColor ? _self.startGradientColor : startGradientColor // ignore: cast_nullable_to_non_nullable
+as Color,endGradientColor: null == endGradientColor ? _self.endGradientColor : endGradientColor // ignore: cast_nullable_to_non_nullable
+as Color,textColor: null == textColor ? _self.textColor : textColor // ignore: cast_nullable_to_non_nullable
+as Color,inverseTextColor: null == inverseTextColor ? _self.inverseTextColor : inverseTextColor // ignore: cast_nullable_to_non_nullable
+as Color,
+  ));
 }
 
-/// @nodoc
-abstract class _$$ThemeColorsImplCopyWith<$Res>
-    implements $ThemeColorsCopyWith<$Res> {
-  factory _$$ThemeColorsImplCopyWith(
-          _$ThemeColorsImpl value, $Res Function(_$ThemeColorsImpl) then) =
-      __$$ThemeColorsImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {Color startGradientColor,
-      Color endGradientColor,
-      Color textColor,
-      Color inverseTextColor});
 }
 
-/// @nodoc
-class __$$ThemeColorsImplCopyWithImpl<$Res>
-    extends _$ThemeColorsCopyWithImpl<$Res, _$ThemeColorsImpl>
-    implements _$$ThemeColorsImplCopyWith<$Res> {
-  __$$ThemeColorsImplCopyWithImpl(
-      _$ThemeColorsImpl _value, $Res Function(_$ThemeColorsImpl) _then)
-      : super(_value, _then);
-
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? startGradientColor = null,
-    Object? endGradientColor = null,
-    Object? textColor = null,
-    Object? inverseTextColor = null,
-  }) {
-    return _then(_$ThemeColorsImpl(
-      startGradientColor: null == startGradientColor
-          ? _value.startGradientColor
-          : startGradientColor // ignore: cast_nullable_to_non_nullable
-              as Color,
-      endGradientColor: null == endGradientColor
-          ? _value.endGradientColor
-          : endGradientColor // ignore: cast_nullable_to_non_nullable
-              as Color,
-      textColor: null == textColor
-          ? _value.textColor
-          : textColor // ignore: cast_nullable_to_non_nullable
-              as Color,
-      inverseTextColor: null == inverseTextColor
-          ? _value.inverseTextColor
-          : inverseTextColor // ignore: cast_nullable_to_non_nullable
-              as Color,
-    ));
-  }
-}
 
 /// @nodoc
 
-class _$ThemeColorsImpl implements _ThemeColors {
-  const _$ThemeColorsImpl(
-      {required this.startGradientColor,
-      required this.endGradientColor,
-      required this.textColor,
-      required this.inverseTextColor});
 
-  @override
-  final Color startGradientColor;
-  @override
-  final Color endGradientColor;
-  @override
-  final Color textColor;
-  @override
-  final Color inverseTextColor;
+class _ThemeColors implements ThemeColors {
+  const _ThemeColors({required this.startGradientColor, required this.endGradientColor, required this.textColor, required this.inverseTextColor});
+  
 
-  @override
-  String toString() {
-    return 'ThemeColors(startGradientColor: $startGradientColor, endGradientColor: $endGradientColor, textColor: $textColor, inverseTextColor: $inverseTextColor)';
-  }
+@override final  Color startGradientColor;
+@override final  Color endGradientColor;
+@override final  Color textColor;
+@override final  Color inverseTextColor;
 
-  @override
-  bool operator ==(dynamic other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$ThemeColorsImpl &&
-            (identical(other.startGradientColor, startGradientColor) ||
-                other.startGradientColor == startGradientColor) &&
-            (identical(other.endGradientColor, endGradientColor) ||
-                other.endGradientColor == endGradientColor) &&
-            (identical(other.textColor, textColor) ||
-                other.textColor == textColor) &&
-            (identical(other.inverseTextColor, inverseTextColor) ||
-                other.inverseTextColor == inverseTextColor));
-  }
+/// Create a copy of ThemeColors
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$ThemeColorsCopyWith<_ThemeColors> get copyWith => __$ThemeColorsCopyWithImpl<_ThemeColors>(this, _$identity);
 
-  @override
-  int get hashCode => Object.hash(runtimeType, startGradientColor,
-      endGradientColor, textColor, inverseTextColor);
 
-  @JsonKey(ignore: true)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$ThemeColorsImplCopyWith<_$ThemeColorsImpl> get copyWith =>
-      __$$ThemeColorsImplCopyWithImpl<_$ThemeColorsImpl>(this, _$identity);
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ThemeColors&&(identical(other.startGradientColor, startGradientColor) || other.startGradientColor == startGradientColor)&&(identical(other.endGradientColor, endGradientColor) || other.endGradientColor == endGradientColor)&&(identical(other.textColor, textColor) || other.textColor == textColor)&&(identical(other.inverseTextColor, inverseTextColor) || other.inverseTextColor == inverseTextColor));
 }
 
-abstract class _ThemeColors implements ThemeColors {
-  const factory _ThemeColors(
-      {required final Color startGradientColor,
-      required final Color endGradientColor,
-      required final Color textColor,
-      required final Color inverseTextColor}) = _$ThemeColorsImpl;
 
-  @override
-  Color get startGradientColor;
-  @override
-  Color get endGradientColor;
-  @override
-  Color get textColor;
-  @override
-  Color get inverseTextColor;
-  @override
-  @JsonKey(ignore: true)
-  _$$ThemeColorsImplCopyWith<_$ThemeColorsImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+@override
+int get hashCode => Object.hash(runtimeType,startGradientColor,endGradientColor,textColor,inverseTextColor);
+
+@override
+String toString() {
+  return 'ThemeColors(startGradientColor: $startGradientColor, endGradientColor: $endGradientColor, textColor: $textColor, inverseTextColor: $inverseTextColor)';
 }
+
+
+}
+
+/// @nodoc
+abstract mixin class _$ThemeColorsCopyWith<$Res> implements $ThemeColorsCopyWith<$Res> {
+  factory _$ThemeColorsCopyWith(_ThemeColors value, $Res Function(_ThemeColors) _then) = __$ThemeColorsCopyWithImpl;
+@override @useResult
+$Res call({
+ Color startGradientColor, Color endGradientColor, Color textColor, Color inverseTextColor
+});
+
+
+
+
+}
+/// @nodoc
+class __$ThemeColorsCopyWithImpl<$Res>
+    implements _$ThemeColorsCopyWith<$Res> {
+  __$ThemeColorsCopyWithImpl(this._self, this._then);
+
+  final _ThemeColors _self;
+  final $Res Function(_ThemeColors) _then;
+
+/// Create a copy of ThemeColors
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? startGradientColor = null,Object? endGradientColor = null,Object? textColor = null,Object? inverseTextColor = null,}) {
+  return _then(_ThemeColors(
+startGradientColor: null == startGradientColor ? _self.startGradientColor : startGradientColor // ignore: cast_nullable_to_non_nullable
+as Color,endGradientColor: null == endGradientColor ? _self.endGradientColor : endGradientColor // ignore: cast_nullable_to_non_nullable
+as Color,textColor: null == textColor ? _self.textColor : textColor // ignore: cast_nullable_to_non_nullable
+as Color,inverseTextColor: null == inverseTextColor ? _self.inverseTextColor : inverseTextColor // ignore: cast_nullable_to_non_nullable
+as Color,
+  ));
+}
+
+
+}
+
+// dart format on

@@ -1,31 +1,25 @@
-
 import 'dart:async';
 
 import 'package:flutter/scheduler.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
-import 'package:lumberdash/lumberdash.dart';
-import 'package:note_master/bloc/blocs/editor_bloc.dart';
-import 'package:note_master/utils/utils.dart';
+import 'package:focus_detector/focus_detector.dart';
+import 'package:memory_notes_organizer/models/current_todo_state.dart';
+import 'package:memory_notes_organizer/models/todos.dart';
+import 'package:memory_notes_organizer/providers.dart';
 import 'package:utilities/utilities.dart';
-
-import '../../models/todos.dart';
-import '../providers.dart';
-import '../viewmodels/main_screen_model.dart';
 
 typedef TodoChangedCallback = void Function(Todo);
 typedef TextChangedCallback = void Function(String);
 typedef TextSelectionPosition = int Function();
 
 const int checkActiveSeconds = 60 * 5; // 5 minutes
-const int checkActiveMinutes = 5; // 5 minutes
+const int checkActiveMinutes = 1; // 1 minutes
 
 class TodoText extends ConsumerStatefulWidget {
   final TodoChangedCallback todoChangedCallback;
 
-  const TodoText(
-      {super.key, required this.todoChangedCallback});
+  const TodoText({super.key, required this.todoChangedCallback});
 
   @override
   ConsumerState createState() => _TodoTextState();
@@ -35,7 +29,6 @@ class _TodoTextState extends ConsumerState<TodoText> {
   late FocusNode todoTextFocusNode;
   late TextEditingController todoNoteTextController;
   late ScrollController scrollController;
-  late MainScreenModel mainScreenModel;
   int currentScrollPosition = 0;
   int currentSearchPosition = 0;
   Todo? currentTodo;
@@ -55,8 +48,7 @@ class _TodoTextState extends ConsumerState<TodoText> {
     todoTextFocusNode = FocusNode();
     todoNoteTextController.addListener(() {
       if (oldText != todoNoteTextController.text && !settingTodoText) {
-        undoStack
-            .addUndo(UndoItem<String>(oldText, todoNoteTextController.text, _undo, _redo));
+        undoStack.addUndo(UndoItem<String>(oldText, todoNoteTextController.text, _undo, _redo));
         oldText = todoNoteTextController.text;
         startTimer();
       }
@@ -85,12 +77,15 @@ class _TodoTextState extends ConsumerState<TodoText> {
 
   @override
   Widget build(BuildContext context) {
-    mainScreenModel = ref.watch(mainScreenModelProvider);
-    if (currentTodo != mainScreenModel.currentlySelectedTodo) {
+    CurrentTodoState currentTodoState = ref.watch(currentTodoStateProvider);
+    Todo? currentlySelectedTodo = currentTodoState.currentTodo;
+    var theme = ref.watch(themeProvider);
+    // Node? currentlySelectedNode = ref.watch(currentlySelectedNodeProvider);
+    if (currentTodo != currentlySelectedTodo) {
       settingTodoText = true;
-      saveNotes();
+      // saveNotes();
       currentScrollPosition = 0;
-      currentTodo = mainScreenModel.currentlySelectedTodo;
+      currentTodo = currentlySelectedTodo;
       final notes = currentTodo?.notes ?? '';
       todoNoteTextController.text = notes;
       savedText = notes;
@@ -100,92 +95,18 @@ class _TodoTextState extends ConsumerState<TodoText> {
     if (currentSearchPosition != currentScrollPosition) {
       currentScrollPosition = currentSearchPosition;
       todoNoteTextController.selection = TextSelection.fromPosition(
-          TextPosition(offset: currentSearchPosition));
+        TextPosition(offset: currentSearchPosition),
+      );
       scrollController.jumpTo(currentSearchPosition.toDouble());
     }
-    return BlocListener<EditorBloc, EditorState>(
-      bloc: ref.watch(editorBlocProvider),
-      listener: (listenerContext, state) {
-        state.maybeWhen(
-            undoState: () {
-              undoStack.undo();
-            },
-            redoState: () {
-              undoStack.redo();
-            },
-            updatedNotesState: (notes) {
-              settingTodoText = true;
-              todoNoteTextController.text = notes;
-              undoStack
-                  .addUndo(UndoItem<String>(oldText, notes, _undo, _redo));
-              oldText = notes;
-              todoTextFocusNode.requestFocus();
-              settingTodoText = false;
-            },
-            searchNoteTextState: (String searchText) {
-
-            },
-            replaceNoteTextState: (String searchText, String replaceText) {
-              if (searchText.isEmpty || replaceText.isEmpty) {
-                logAndShowWidgetError(ref, 'Either search or replace text is empty');
-                return;
-              }
-              settingTodoText = true;
-              oldText = todoNoteTextController.text;
-              final currentNotesText = todoNoteTextController.text;
-              var currentPosition = todoNoteTextController.selection.extentOffset;
-              currentPosition = currentPosition == -1 ? 0 : currentPosition;
-              final index = currentNotesText.indexOf(searchText, currentPosition);
-              if (index != -1) {
-                final updatedText = currentNotesText.replaceFirst(
-                    searchText, replaceText, index);
-                todoNoteTextController.text = updatedText;
-                undoStack
-                    .addUndo(UndoItem<String>(oldText, updatedText, _undo, _redo));
-                oldText = updatedText;
-                todoNoteTextController.selection = TextSelection.collapsed(offset:index + replaceText.length);
-              }
-              todoTextFocusNode.requestFocus();
-              settingTodoText = false;
-            },
-            replaceAllNoteTextState: (String searchText, String replaceText) {
-              if (searchText.isEmpty || replaceText.isEmpty) {
-                logAndShowWidgetError(ref, 'Either search or replace text is empty');
-                return;
-              }
-              settingTodoText = true;
-              oldText = todoNoteTextController.text;
-              final currentNotesText = todoNoteTextController.text;
-              final currentPosition = todoNoteTextController.selection;
-              var index = currentNotesText.indexOf(searchText);
-              var updatedText = currentNotesText;
-              final updated = index != -1;
-              while (index != -1) {
-                updatedText = updatedText.replaceFirst(
-                    searchText, replaceText, index);
-                index = updatedText.indexOf(searchText, index + replaceText.length + 1);
-              }
-              if (updated) {
-                todoNoteTextController.text = updatedText;
-                undoStack
-                    .addUndo(
-                    UndoItem<String>(oldText, updatedText, _undo, _redo));
-                oldText = updatedText;
-              }
-              todoNoteTextController.selection = currentPosition;
-              todoTextFocusNode.requestFocus();
-              settingTodoText = false;
-            },
-            noState: () {},
-            orElse: () {
-              logMessage('event not found $state');
-            });
-      },
+    return FocusDetector(
+      onFocusGained: startTimer,
+      onFocusLost: saveNotes,
       child: TextField(
         decoration: const InputDecoration(border: InputBorder.none),
-        style: getMediumTextStyle(mainScreenModel.themeColors.textColor),
+        style: getMediumTextStyle(theme.textColor),
         keyboardType: TextInputType.multiline,
-        autofocus: true,
+        // autofocus: true,
         maxLines: null,
         cursorColor: Colors.black,
         focusNode: todoTextFocusNode,
@@ -211,8 +132,7 @@ class _TodoTextState extends ConsumerState<TodoText> {
       if (currentTodo != null) {
         final updatedTodo = currentTodo!.copyWith(notes: todoNoteTextController.text);
         SchedulerBinding.instance.addPostFrameCallback((_) {
-          widget.todoChangedCallback(
-              updatedTodo);
+          widget.todoChangedCallback(updatedTodo);
         });
       }
     }
@@ -228,7 +148,9 @@ class _TodoTextState extends ConsumerState<TodoText> {
       if (oldPosition.extentOffset < todoNoteTextController.text.length) {
         todoNoteTextController.selection = oldPosition;
       } else {
-        todoNoteTextController.selection = TextSelection.collapsed(offset:todoNoteTextController.text.length);
+        todoNoteTextController.selection = TextSelection.collapsed(
+          offset: todoNoteTextController.text.length,
+        );
       }
       settingTodoText = false;
     });
@@ -244,7 +166,9 @@ class _TodoTextState extends ConsumerState<TodoText> {
       if (oldPosition.extentOffset < todoNoteTextController.text.length) {
         todoNoteTextController.selection = oldPosition;
       } else {
-        todoNoteTextController.selection = TextSelection.collapsed(offset:todoNoteTextController.text.length);
+        todoNoteTextController.selection = TextSelection.collapsed(
+          offset: todoNoteTextController.text.length,
+        );
       }
       settingTodoText = false;
     });

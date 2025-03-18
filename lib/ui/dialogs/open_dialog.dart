@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:memory_notes_organizer/providers.dart';
 import '../../models/models.dart';
 import '../../repository/todo_repository.dart';
-import '../providers.dart';
 
 typedef OpenCallBack = void Function(TodoFile?);
 

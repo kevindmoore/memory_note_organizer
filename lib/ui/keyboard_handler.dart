@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:note_master/bloc/blocs/search_bloc.dart';
+import 'package:memory_notes_organizer/events/menu_events.dart';
 import 'package:utilities/utilities.dart';
 
 import '../providers.dart';
@@ -26,7 +26,7 @@ class KeyboardHandler extends ConsumerWidget {
   Map<Type, Action<Intent>> createActions(WidgetRef ref) {
     final actions = <Type, Action<Intent>>{};
     actions[SearchIntent] = CallbackAction(onInvoke: (e) {
-      ref.read(searchBlocProvider).add(const SearchEvent.showSearchEvent());
+      ref.read(menuBus).fire(ShowSearchEvent());
       return null;
     });
     //SearchAction();

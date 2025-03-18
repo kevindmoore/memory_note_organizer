@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:memory_notes_organizer/providers.dart';
+import 'package:memory_notes_organizer/theme/theme.dart';
 import 'package:utilities/utilities.dart';
 
-import '../../theme/theme.dart';
-import '../../viewmodels/main_screen_model.dart';
-import '../main_functions.dart';
 
 class ThemePanel extends ConsumerStatefulWidget {
-  final MainScreenModel mainScreenModel;
-  final StateChangeCallback? callback;
-  const ThemePanel(this.mainScreenModel, this.callback, {super.key});
+  const ThemePanel({super.key});
 
   @override
   ConsumerState<ThemePanel> createState() => _ThemePanelState();
@@ -18,29 +15,36 @@ class ThemePanel extends ConsumerStatefulWidget {
 class _ThemePanelState extends ConsumerState<ThemePanel> {
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Change theme',
-            style: titleBlackText,
-          ),
-          const Divider(),
-          const SizedBox(
-            height: 8,
-          ),
-          SizedBox(
-            height: 110,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: 5,
-              itemBuilder: (BuildContext context, int index) =>
-                  themeBoxByIndex(index),
+    var theme = ref.watch(themeProvider);
+    return Container(
+      decoration: createGradient(
+        theme.startGradientColor,
+        theme.endGradientColor,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Change Theme',
+              style: titleBlackText,
             ),
-          ),
-        ],
+            const Divider(),
+            const SizedBox(
+              height: 8,
+            ),
+            SizedBox(
+              height: 110,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: 5,
+                itemBuilder: (BuildContext context, int index) =>
+                    themeBoxByIndex(index),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -72,8 +76,7 @@ class _ThemePanelState extends ConsumerState<ThemePanel> {
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: () {
-        widget.mainScreenModel.themeManager.setThemeColor(colors);
-        widget.callback?.call(CallbackType.refresh, null);
+        ref.read(themeProvider.notifier).setThemeColor(colors);
       },
       child: Card(
         child: Padding(

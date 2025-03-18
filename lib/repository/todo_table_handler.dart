@@ -1,11 +1,10 @@
-import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lumberdash/lumberdash.dart';
 import 'package:supa_manager/supa_manager.dart';
+import 'package:memory_notes_organizer/providers.dart';
 
 import '../models/models.dart';
 import '../todos/todo_manager.dart';
-import '../utils/utils.dart';
-import 'local_repo.dart';
 import 'model_table_entries.dart';
 
 class TodoTableHandler {
@@ -23,22 +22,22 @@ class TodoTableHandler {
   Future<Todo?> addNewTodoToCategory(
       int? todoFileId, int? categoryId, Todo todo) async {
     if (todoFileId == null) {
-      logAndShowError(ref, 'addNewTodoToCategory: todoFileId is null');
+      logError( 'addNewTodoToCategory: todoFileId is null');
       return null;
     }
     if (categoryId == null) {
-      logAndShowError(ref, 'addNewTodoToCategory: categoryId is null');
+      logError( 'addNewTodoToCategory: categoryId is null');
       return null;
     }
     final todoFile = todoManager?.findTodoFile(todoFileId);
     if (todoFile == null) {
-      logAndShowError(
-          ref, 'addNewTodoToCategory: TodoFile not found for $todoFileId');
+      logError(
+          'addNewTodoToCategory: TodoFile not found for $todoFileId');
       return null;
     }
     final category = todoManager?.findFileCategory(todoFileId, categoryId);
     if (category == null) {
-      logAndShowError(ref, 'addNewTodoToCategory: category is null');
+      logError( 'addNewTodoToCategory: category is null');
       return null;
     }
     final updatedTodo = todo.copyWith(
@@ -47,17 +46,20 @@ class TodoTableHandler {
         lastUpdated: DateTime.now());
     final result = await databaseRepository.addEntry(
         todoTableData, TodoTableEntry(updatedTodo, todoFileId, categoryId));
-    return result.when(success: (data) {
-      todoManager?.addTodoToCategory(todoFileId, categoryId, data);
-      // localRepo.addLocalTodo(data);
-      return data;
-    }, failure: (Exception error) {
-      logAndShowError(ref, error.toString());
-      return null;
-    }, errorMessage: (int code, String? message) {
-      logAndShowError(ref, message!);
-      return null;
-    });
+    switch (result) {
+      case Success(data: final data):
+        todoManager?.addTodoToCategory(todoFileId, categoryId, data!);
+        // localRepo.addLocalTodo(data);
+        return data;
+      case Failure(error: final error):
+        if (error is SignedOutException) {
+          ref?.read(configurationProvider).loginStateNotifier.loggedIn(false);
+        }
+        logError( error.toString());
+      case ErrorMessage(message: final message, code: _):
+        logError( message!);
+    }
+    return null;
   }
 
   Future<Todo?> addNewTodo(Todo todo, int todoFileId, int categoryId) async {
@@ -68,27 +70,30 @@ class TodoTableHandler {
     final result = await databaseRepository.addEntry(
         todoTableData, TodoTableEntry(updatedTodo, todoFileId, categoryId));
 
-    return result.when(success: (data) {
-      todoManager?.addTodo(data);
-      // localRepo.addLocalTodo(data);
-      return data;
-    }, failure: (Exception error) {
-      logAndShowError(ref, error.toString());
-      return null;
-    }, errorMessage: (int code, String? message) {
-      logAndShowError(ref, message!);
-      return null;
-    });
+    switch (result) {
+      case Success(data: final data):
+        todoManager?.addTodo(data!);
+        // localRepo.addLocalTodo(data);
+        return data;
+      case Failure(error: final error):
+        if (error is SignedOutException) {
+          ref?.read(configurationProvider).loginStateNotifier.loggedIn(false);
+        }
+        logError( error.toString());
+      case ErrorMessage(message: final message, code: _):
+        logError( message!);
+    }
+    return null;
   }
 
   Future<Todo?> addNewTodoToParent(
       int? todoFileId, int? categoryId, int parentId, Todo todo) async {
     if (todoFileId == null) {
-      logAndShowError(ref, 'addNewTodoToParent: todoFileId is null');
+      logError( 'addNewTodoToParent: todoFileId is null');
       return null;
     }
     if (categoryId == null) {
-      logAndShowError(ref, 'addNewTodoToParent: categoryId is null');
+      logError( 'addNewTodoToParent: categoryId is null');
       return null;
     }
     final updatedTodo = todo.copyWith(
@@ -98,17 +103,20 @@ class TodoTableHandler {
         lastUpdated: DateTime.now());
     final result = await databaseRepository.addEntry(
         todoTableData, TodoTableEntry(updatedTodo, todoFileId, categoryId));
-    return result.when(success: (data) {
-      todoManager?.addTodo(data);
-      // localRepo.addLocalTodo(data);
-      return data;
-    }, failure: (Exception error) {
-      logAndShowError(ref, error.toString());
-      return null;
-    }, errorMessage: (int code, String? message) {
-      logAndShowError(ref, message!);
-      return null;
-    });
+    switch (result) {
+      case Success(data: final data):
+        todoManager?.addTodo(data!);
+        // localRepo.addLocalTodo(data);
+        return data;
+      case Failure(error: final error):
+        if (error is SignedOutException) {
+          ref?.read(configurationProvider).loginStateNotifier.loggedIn(false);
+        }
+        logError( error.toString());
+      case ErrorMessage(message: final message, code: _):
+        logError( message!);
+    }
+    return null;
   }
 
   Future<List<Todo>> getTodosWithFileAndCategory(
@@ -117,15 +125,18 @@ class TodoTableHandler {
       SelectEntry.and(todoFileIdName, todoFileId.toString()),
       SelectEntry.and(categoryIdName, categoryId.toString()),
     ]);
-    return result.when(success: (data) {
-      return data;
-    }, failure: (Exception error) {
-      logAndShowError(ref, error.toString());
-      return <Todo>[];
-    }, errorMessage: (int code, String? message) {
-      logAndShowError(ref, message!);
-      return <Todo>[];
-    });
+    switch (result) {
+      case Success(data: final data):
+        return data;
+      case Failure(error: final error):
+        if (error is SignedOutException) {
+          ref?.read(configurationProvider).loginStateNotifier.loggedIn(false);
+        }
+        logError( error.toString());
+      case ErrorMessage(message: final message, code: _):
+        logError( message!);
+    }
+    return <Todo>[];
   }
 
   Future deleteTodo(Todo todo, bool removeFromList) async {
@@ -139,36 +150,38 @@ class TodoTableHandler {
       if (parentTodo != null) {
         final childIndex = todoManager?.childTodoIndexInParent(parentTodo, todo);
         if (childIndex != null && childIndex != -1) {
-          final childBuilder = parentTodo.children.toIList();
-          childBuilder.removeAt(childIndex);
+          parentTodo.children.removeAt(childIndex);
           final updatedParentTodo = parentTodo.copyWith(
-              children: childBuilder.unlock, lastUpdated: DateTime.now());
+              children: parentTodo.children, lastUpdated: DateTime.now());
           todoManager?.updateTodo(updatedParentTodo);
           // parentTodo.children.removeAt(childIndex);
         } else {
-          logAndShowError(ref,
+          logError(
               'deleteTodo: Could not find child index in parent todo. ${todo.name}');
         }
         final result = await databaseRepository.updateTableEntry(
             todoTableData,
             TodoTableEntry(
                 parentTodo, parentTodo.todoFileId!, parentTodo.categoryId!));
-        return result.when(success: (data) async {
-          return data;
-        }, failure: (Exception error) {
-          logAndShowError(ref, error.toString());
-          return null;
-        }, errorMessage: (int code, String? message) {
-          logAndShowError(ref, message!);
-          return null;
-        });
+        switch (result) {
+          case Success(data: final data):
+            return data;
+          case Failure(error: final error):
+            if (error is SignedOutException) {
+              ref?.read(configurationProvider).loginStateNotifier.loggedIn(false);
+            }
+            logError( error.toString());
+          case ErrorMessage(message: final message, code: _):
+            logError( message!);
+        }
+        return null;
       } else {
-        logAndShowError(
-            ref, 'deleteTodo: Could not find parent todo. ${todo.name}');
+        logError(
+            'deleteTodo: Could not find parent todo. ${todo.name}');
         return Future.value(null);
       }
     } else if (todo.id == null) {
-      logAndShowError(ref,
+      logError(
           'deleteTodo: Could not update todo. document id or parent id is null ${todo.name}');
       return Future.value(null);
     }
@@ -190,36 +203,38 @@ class TodoTableHandler {
             todoTableData,
             TodoTableEntry(
                 parentTodo, parentTodo.todoFileId!, parentTodo.categoryId!));
-        return result.when(success: (data) async {
-          return data;
-        }, failure: (Exception error) {
-          logAndShowError(ref, error.toString());
-          return null;
-        }, errorMessage: (int code, String? message) {
-          logAndShowError(ref, message!);
-          return null;
-        });
+        switch (result) {
+          case Success(data: final data):
+            return data;
+          case Failure(error: final error):
+            if (error is SignedOutException) {
+              ref?.read(configurationProvider).loginStateNotifier.loggedIn(false);
+            }
+            logError( error.toString());
+          case ErrorMessage(message: final message, code: _):
+            logError( message!);
+        }
+        return null;
       } else {
-        logAndShowError(
-            ref, 'updateTodo: Could not find parent todo. ${todo.name}');
+        logError(
+            'updateTodo: Could not find parent todo. ${todo.name}');
         return Future.value(null);
       }
     } else if (todo.id == null) {
-      logAndShowError(ref,
+      logError(
           'updateTodo: Could not update todo. document id or parent id is null ${todo.name}');
       return Future.value(null);
     }
     final result = await databaseRepository.updateTableEntry(todoTableData,
         TodoTableEntry(todo, todo.todoFileId!, todo.categoryId!));
-    return result.when(success: (data) async {
-      // localRepo.updateLocalTodo(data);
-      return data;
-    }, failure: (Exception error) {
-      logAndShowError(ref, error.toString());
-      return null;
-    }, errorMessage: (int code, String? message) {
-      logAndShowError(ref, message!);
-      return null;
-    });
+    switch (result) {
+      case Success(data: final data):
+        return data;
+      case Failure(error: final error):
+        logError( error.toString());
+      case ErrorMessage(message: final message, code: _):
+        logError( message!);
+    }
+    return null;
   }
 }

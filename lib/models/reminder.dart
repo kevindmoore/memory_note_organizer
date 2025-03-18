@@ -1,4 +1,5 @@
-import 'package:note_master/models/time.dart';
+
+import 'package:memory_notes_organizer/models/time.dart';
 
 enum RecurType {
   hourly,

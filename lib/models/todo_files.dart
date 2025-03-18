@@ -1,6 +1,7 @@
 import 'dart:convert';
 
-import '../logging/log_client.dart';
+import 'package:lumberdash/lumberdash.dart';
+
 import 'models.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -128,12 +129,12 @@ class TodoFiles extends ChangeNotifier {
   Todo? findDeepTodo(int? todoFileId, int? categoryId, int? id) {
     final todoFile = findTodoFile(todoFileId);
     if (todoFile == null) {
-      logSystemError( 'findTodoInCategory:Could not find todo file id: $todoFileId');
+      logError( 'findTodoInCategory:Could not find todo file id: $todoFileId');
       return null;
     }
     final category = findCategoryInTodoFile(todoFile, categoryId);
     if (category == null) {
-      logSystemError( 'findTodoInCategory:Could not find category id: $categoryId');
+      logError( 'findTodoInCategory:Could not find category id: $categoryId');
       return null;
     }
     return findTodoInChildren(category.todos, id);
@@ -142,12 +143,12 @@ class TodoFiles extends ChangeNotifier {
   int? findTodoIndex(int? todoFileId, int? categoryId, int? id) {
     final todoFile = findTodoFile(todoFileId);
     if (todoFile == null) {
-      logSystemError( 'findTodoInCategory:Could not find todo file id: $todoFileId');
+      logError( 'findTodoInCategory:Could not find todo file id: $todoFileId');
       return null;
     }
     final category = findCategoryInTodoFile(todoFile, categoryId);
     if (category == null) {
-      logSystemError( 'findTodoInCategory:Could not find category id: $categoryId');
+      logError( 'findTodoInCategory:Could not find category id: $categoryId');
       return null;
     }
     return findTodoIndexInChildren(category.todos, id);
@@ -173,20 +174,20 @@ class TodoFiles extends ChangeNotifier {
       int? todoFileId, int? categoryId, int? parentId, int? id) {
     final todoFile = findTodoFile(todoFileId);
     if (todoFile == null) {
-      logSystemError( 'findTodoInCategory:Could not find todo file id: $todoFileId');
+      logError( 'findTodoInCategory:Could not find todo file id: $todoFileId');
       return null;
     }
     final category = findCategoryInTodoFile(todoFile, categoryId);
     if (category == null) {
-      logSystemError( 'findTodoInCategory:Could not find category id: $categoryId');
+      logError( 'findTodoInCategory:Could not find category id: $categoryId');
       return null;
     }
     if (parentId == null) {
-      logSystemError( 'findTodoInParentTodo: parentId is null');
+      logError( 'findTodoInParentTodo: parentId is null');
       return null;
     }
     if (id == null) {
-      logSystemError(
+      logError(
            'findTodoInParentTodo: id is null');
       return null;
     }

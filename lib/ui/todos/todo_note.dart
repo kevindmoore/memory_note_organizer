@@ -41,7 +41,7 @@ class _TodoNoteState extends State<TodoNote> {
             Expanded(
               child: TextField(
                   decoration: const InputDecoration(border: InputBorder.none),
-                  autofocus: true,
+                  // autofocus: true,
                   keyboardType: TextInputType.multiline,
                   maxLines: null,
                   controller: todoTextController,

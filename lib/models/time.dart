@@ -1,4 +1,5 @@
-import 'package:note_master/models/reminder.dart';
+
+import 'package:memory_notes_organizer/models/reminder.dart';
 
 class Hourly  {
   bool everyHour = true;

@@ -1,29 +1,26 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:note_master/bloc/blocs/editor_bloc.dart';
+import 'package:memory_notes_organizer/events/menu_events.dart';
+import 'package:memory_notes_organizer/models/current_todo_state.dart';
+import 'package:memory_notes_organizer/models/node.dart';
+import 'package:memory_notes_organizer/models/todos.dart';
+import 'package:memory_notes_organizer/providers.dart';
+import 'package:memory_notes_organizer/ui/todos/todo_text.dart';
 import 'package:utilities/utilities.dart';
 
-import '../../../models/todos.dart';
-import '../../providers.dart';
-import '../../viewmodels/main_screen_model.dart';
-import '../todo_text.dart';
 import 'note_panel_search.dart';
 import 'row_menu.dart';
 
 /// This Widget holds the controls the notes panel
 class NotesPanel extends ConsumerStatefulWidget {
-  // final MainFunctions mainFunctions;
-
-  // const NotesPanel(this.mainFunctions, {super.key});
   const NotesPanel({super.key});
 
   @override
   ConsumerState createState() => _NotesPanelState();
 }
 
-class _NotesPanelState extends ConsumerState<NotesPanel> {
-  late MainScreenModel mainScreenModel;
+class _NotesPanelState extends ConsumerState<NotesPanel> with AutomaticKeepAliveClientMixin {
   late TextEditingController searchTextController;
   late TextEditingController replaceTextController;
   Todo? currentTodo;
@@ -50,24 +47,31 @@ class _NotesPanelState extends ConsumerState<NotesPanel> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<Todo?>(currentTodoProvider, (Todo? previous, Todo? next) {
+    // Required for automatic keep alive
+    super.build(context);
+    ref.listen<CurrentTodoState>(currentTodoStateProvider, (CurrentTodoState? previous, CurrentTodoState next) {
       setState(() {
-        currentTodo = mainScreenModel.currentlySelectedTodo;
+        currentTodo = next.currentTodo;
       });
     });
-    mainScreenModel = ref.watch(mainScreenModelProvider);
     final showTitleBar = ref.read(systemInfoProvider).showSystemTitleBar();
-    if (mainScreenModel.currentlySelectedTodo == null) {
+    Node? currentlySelectedNode = ref.read(currentlySelectedNodeProvider);
+    if (currentlySelectedNode != null) {
+      CurrentTodoState currentTodoState = ref.watch(currentTodoStateProvider);
+      currentTodo = currentTodoState.currentTodo;
+    }
+    if (currentTodo == null || currentlySelectedNode == null) {
       return createEmptyNoteScreen();
     }
+    var theme = ref.watch(themeProvider);
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
             begin: Alignment.bottomRight,
             end: Alignment.topLeft,
             colors: [
-              mainScreenModel.themeColors.startGradientColor,
-              mainScreenModel.themeColors.endGradientColor
+              theme.startGradientColor,
+              theme.endGradientColor
             ]),
       ),
       child: Padding(
@@ -81,12 +85,13 @@ class _NotesPanelState extends ConsumerState<NotesPanel> {
                   Expanded(
                       flex: 1,
                       child: AutoSizeText(
-                          mainScreenModel.currentlySelectedTodo!.name,
+                         currentTodo!.name,
                           style: titleText,
                           maxLines: 1)),
                   const Spacer(),
                   RowMenu(
-                      mainScreenModel.currentNode, false),
+                      currentlySelectedNode
+                      , false),
                 ],
               ),
             if (!showTitleBar) const Divider(),
@@ -105,11 +110,11 @@ class _NotesPanelState extends ConsumerState<NotesPanel> {
   }
 
   void undo() {
-    ref.read(editorBlocProvider).add(const EditorEvent.undoEvent());
+    // ref.read(editorBlocProvider).add(const EditorEvent.undoEvent());
   }
 
   void redo() {
-    ref.read(editorBlocProvider).add(const EditorEvent.redoEvent());
+    // ref.read(editorBlocProvider).add(const EditorEvent.redoEvent());
   }
 
   Widget createEmptyNoteScreen() {
@@ -134,22 +139,26 @@ class _NotesPanelState extends ConsumerState<NotesPanel> {
   }
 
   void startSearch(String searchText) {
-    ref.read(editorBlocProvider).add(
-        EditorEvent.searchNoteTextEvent(searchText));
+    // ref.read(editorBlocProvider).add(
+    //     EditorEvent.searchNoteTextEvent(searchText));
   }
 
   void replaceText(String searchText, String replaceText) {
-    ref.read(editorBlocProvider).add(
-        EditorEvent.replaceNoteTextEvent(searchText, replaceText));
+    // ref.read(editorBlocProvider).add(
+    //     EditorEvent.replaceNoteTextEvent(searchText, replaceText));
   }
 
   void replaceAllText(String searchText, String replaceText) {
-    ref.read(editorBlocProvider).add(
-        EditorEvent.replaceAllNoteTextEvent(searchText, replaceText));
+    // ref.read(editorBlocProvider).add(
+    //     EditorEvent.replaceAllNoteTextEvent(searchText, replaceText));
   }
 
   void todoUpdatedCallback(Todo updatedTodo) {
-    mainScreenModel.updateCurrentTodo(updatedTodo);
+    getTodoRepository().updateTodo(updatedTodo);
+    getMenuBus().fire(TodoUpdatedEvent(updatedTodo));
   }
+
+  @override
+  bool get wantKeepAlive => true;
 
 }

@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:memory_notes_organizer/events/menu_events.dart';
+import 'package:memory_notes_organizer/providers.dart';
 import 'package:utilities/utilities.dart';
 
 import '../../../models/node.dart';
 
 class RowMenu extends ConsumerStatefulWidget {
-  // final MainFunctions mainFunctions;
   final Node childNode;
   final bool selected;
-  // const RowMenu(this.mainFunctions, this.childNode, this.selected, {super.key});
+
   const RowMenu(this.childNode, this.selected, {super.key});
 
   @override
@@ -19,129 +20,115 @@ class _RowMenuState extends ConsumerState<RowMenu> {
   @override
   Widget build(BuildContext context) {
     final menuItems = <PopupMenuEntry>[];
+
+    // File
     if (widget.childNode.type == NodeType.file) {
-      menuItems.add(PopupMenuItem(
-        child: Row(
-          children: [
-            const Icon(Icons.close, color: Colors.black,),
-            const SizedBox(
-              width: 4.0,
-            ),
-            Text(
-              'Close',
-              style: mediumBlackText,
-            )
-          ],
+      menuItems.add(
+        buildMenuRow(
+          text: 'Close',
+          icon: Icons.close,
+          onTap: () {
+            getMenuBus().fire(CloseCurrentFileEvent());
+          },
         ),
-        onTap: () {
-          // widget.mainFunctions.closeCurrentFile();
-        },
-      ));
-      menuItems.add(PopupMenuItem(
-        child: Row(
-          children: [
-            const Icon(Icons.refresh, color: Colors.black,),
-            const SizedBox(
-              width: 4.0,
-            ),
-            Text(
-              'Reload',
-              style: mediumBlackText,
-            )
-          ],
+      );
+      menuItems.add(
+        buildMenuRow(
+          text: 'Reload',
+          icon: Icons.refresh,
+          onTap: () {
+            getMenuBus().fire(ReloadFileEvent(widget.childNode.id!));
+          },
         ),
-        onTap: () {
-          // widget.mainFunctions.reloadCurrentFile();
-        },
-      ));
+      );
+      menuItems.add(
+        buildMenuRow(
+          text: 'New Category',
+          icon: Icons.add,
+          onTap: () {
+            getMenuBus().fire(NewCategoryEvent());
+          },
+        ),
+      );
+    } else if (widget.childNode.type == NodeType.category) {
+
     }
     menuItems.add(
-      PopupMenuItem(
-        child: Row(
-          children: [
-            const Icon(Icons.copy, color: Colors.black,),
-            const SizedBox(
-              width: 4.0,
-            ),
-            Text(
-              'Duplicate',
-              style: mediumBlackText,
-            )
-          ],
-        ),
+      buildMenuRow(
+        text: 'New Todo',
+        icon: Icons.add,
         onTap: () {
-          // widget.mainFunctions.showNewDialog(context, 'Duplicate', (newName) {
-          //   if (newName != null) {
-          //     final addedItem = widget.mainFunctions.duplicate(widget.childNode, newName);
-          //     widget.mainFunctions.callback.call(CallbackType.add, addedItem);
-          //   }
-          // });
+          getMenuBus().fire(NewTodoEvent());
         },
       ),
     );
     menuItems.add(
-      PopupMenuItem(
-        child: Row(
-          children: [
-            const Icon(Icons.delete, color: Colors.black,),
-            const SizedBox(
-              width: 4.0,
-            ),
-            Text(
-              'Delete',
-              style: mediumBlackText,
-            )
-          ],
-        ),
+      buildMenuRow(
+        text: 'Duplicate',
+        icon: Icons.copy,
         onTap: () {
-          // widget.mainFunctions.showAreYouSureDialog(context, () {
-          //   widget.mainFunctions.mainScreenModel.deletePath(widget.childNode);
-          //   widget.mainFunctions.callback.call(CallbackType.delete, null);
-          // }, null);
+          getMenuBus().fire(DuplicateFileEvent(widget.childNode.id!));
         },
       ),
     );
     menuItems.add(
-      PopupMenuItem(
-        child: Row(
-          children: [
-            const Icon(Icons.drive_file_rename_outline, color: Colors.black,),
-            const SizedBox(
-              width: 4.0,
-            ),
-            Text(
-              'Rename',
-              style: mediumBlackText,
-            )
-          ],
-        ),
+      buildMenuRow(
+        text: 'Delete',
+        icon: Icons.delete,
         onTap: () {
-          // Navigator.pop(context);
+          if (widget.childNode.type == NodeType.file) {
+            getMenuBus().fire(DeleteFileEvent(widget.childNode.id!));
+          } else if (widget.childNode.type == NodeType.category) {
+            getMenuBus().fire(DeleteCategoryEvent(widget.childNode.id!));
+          } else if (widget.childNode.type == NodeType.todo) {
+            getMenuBus().fire(DeleteTodoEvent(widget.childNode.id!));
+          }
+        },
+      ),
+    );
+    menuItems.add(
+      buildMenuRow(
+        text: 'Rename',
+        icon: Icons.drive_file_rename_outline,
+        onTap: () {
           switch (widget.childNode.type) {
             case NodeType.file:
-              // widget.mainFunctions.renameList(context);
+              getMenuBus().fire(RenameFileEvent(widget.childNode.id!));
               break;
             case NodeType.category:
-              // widget.mainFunctions.renameCategory(context);
+              getMenuBus().fire(RenameCategoryEvent(widget.childNode.id!));
               break;
             case NodeType.todo:
-              // widget.mainFunctions.renameTodo(context);
+              getMenuBus().fire(RenameTodoEvent(widget.childNode.id!));
               break;
             case NodeType.root:
               break;
           }
-          // widget.mainFunctions.callback.call(CallbackType.refresh, null);
         },
       ),
     );
     return PopupMenuButton(
-      icon: const Icon(
-        Icons.more_vert,
-        // color: widget.selected
-        //     ? widget.mainFunctions.mainScreenModel.themeColors.inverseTextColor
-        //     : widget.mainFunctions.mainScreenModel.themeColors.textColor,
-      ),
+      menuPadding: EdgeInsets.zero,
+      padding: EdgeInsets.zero,
+      icon: const Icon(Icons.more_vert),
       itemBuilder: (context) => menuItems,
+    );
+  }
+
+  PopupMenuItem buildMenuRow({
+    required String text,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return PopupMenuItem(
+      onTap: onTap,
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.black),
+          const SizedBox(width: 4.0),
+          Text(text, style: mediumBlackText),
+        ],
+      ),
     );
   }
 }

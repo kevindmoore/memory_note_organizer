@@ -2,10 +2,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../providers.dart';
+import 'package:memory_notes_organizer/providers.dart';
 
 typedef NewNameCallBack = void Function(String?);
+
+void showRenameDialog(WidgetRef ref, String title, NewNameCallBack callBack) {
+  final dialogState = ref.read(dialogStateProvider);
+  if (!dialogState.renameDialogShowing) {
+    dialogState.renameDialogShowing = true;
+    showDialog(
+      context: ref.read(appRouterProvider).navigatorKey.currentContext!,
+      builder: (context) =>
+          RenameDialog(
+            title: title,
+            callBack: callBack,
+          ),
+    );
+  }
+}
 
 class RenameDialog extends ConsumerStatefulWidget {
   final String title;

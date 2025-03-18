@@ -38,15 +38,14 @@ List<Map<String, dynamic>> todoListToDatabaseJson(List<Todo> todos) {
 
 }
 
+// @JsonSerializable(explicitToJson: true)
 @Freezed(makeCollectionsUnmodifiable: false)
-class TodoFile with _$TodoFile {
-  // must be above factory method
-  @JsonSerializable(explicitToJson: true)
+abstract class TodoFile with _$TodoFile {
+  // // must be above factory method
   const factory TodoFile({
     required String name,
     @JsonKey(includeIfNull: false)
     int? id,
-    @JsonKey(includeIfNull: false)
     @JsonKey(name: 'user_id', includeIfNull: false) String? userId,
     @JsonKey(name: 'last_updated', includeIfNull: false) DateTime? lastUpdated,
     @JsonKey(includeFromJson: false, includeToJson: false)
@@ -62,35 +61,24 @@ class TodoFile with _$TodoFile {
   }
 }
 
+// @JsonSerializable(explicitToJson: true)
 @Freezed(makeCollectionsUnmodifiable: false)
-class Todo with _$Todo {
+abstract class Todo with _$Todo {
   // must be above factory method
-  @JsonSerializable(explicitToJson: true)
   const factory Todo({
-/*
-    DateTime? startDate,
-    DateTime? endDate,
-    DateTime? dateFinished,
-    @Default(STATUS.NOT_STARTED) STATUS status,
-    @Default(PRIORITY.LOW) PRIORITY priority,
 
-*/
-    // List<UserField> userFields = <UserField>[];
-    // Category parent;
     @Default(false) bool done,
     @Default(true) bool visible,
     @Default(false) bool expanded,
     @Default(0) int order,
 
-    // Reminder reminder,
-    // Action action,
     required String name,
     //  ids
     @JsonKey(includeIfNull: false)
     int? id,
-    @JsonKey(includeIfNull: false)
     // TODO: Check to makes sure this is generated as 'user_id' and not userId
-    @JsonKey(name: 'user_id', includeIfNull: false) String? userId,
+    @JsonKey(name: 'user_id', includeIfNull: false)
+    String? userId,
     @JsonKey(includeIfNull: false)
     int? todoFileId,
     @JsonKey(includeIfNull: false)

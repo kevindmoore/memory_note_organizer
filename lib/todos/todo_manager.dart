@@ -1,14 +1,14 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:note_master/models/todo_files.dart';
+import 'package:lumberdash/lumberdash.dart';
+import 'package:memory_notes_organizer/models/selection_state.dart';
+import 'package:memory_notes_organizer/providers.dart';
 
-import '../bloc/blocs/search_bloc.dart';
 import '../models/categories.dart';
 import '../models/search_result.dart';
+import '../models/todo_files.dart';
 import '../models/todos.dart';
-import '../ui/providers.dart';
-import '../utils/utils.dart';
 
 class TodoManager extends ChangeNotifier {
   final Ref? ref;
@@ -34,12 +34,12 @@ class TodoManager extends ChangeNotifier {
   void addCategory(int todoFileId, Category category) {
     final todoFile = findTodoFile(todoFileId);
     if (todoFile == null) {
-      logAndShowError(
-          ref, 'addCategory: todoFile is null for ${category.name}');
+      logError('addCategory: todoFile is null for ${category.name}');
       return;
     }
-    final updatedTodoFile =
-        todoFile.copyWith(categories: [...todoFile.categories, category]);
+    final updatedTodoFile = todoFile.copyWith(
+      categories: [...todoFile.categories, category],
+    );
     replaceUpdatedTodoFile(updatedTodoFile);
   }
 
@@ -121,22 +121,30 @@ class TodoManager extends ChangeNotifier {
     final results = <SearchResult>[];
     for (final todoFile in todoFiles.files) {
       if (contains(todoFile.name, text)) {
-        results.add(SearchResult(
+        results.add(
+          SearchResult(
             searchType: SearchType.file,
             fullText: todoFile.name,
             path: ResultPath(todoFileId: todoFile.id!),
-            todoFile: todoFile));
+            todoFile: todoFile,
+          ),
+        );
       }
 
       for (final category in todoFile.categories) {
         if (contains(category.name, text)) {
-          results.add(SearchResult(
+          results.add(
+            SearchResult(
               searchType: SearchType.category,
               fullText: category.name,
-              path:
-                  ResultPath(todoFileId: todoFile.id!, categoryId: category.id),
+              path: ResultPath(
+                todoFileId: todoFile.id!,
+                categoryId: category.id,
+              ),
               todoFile: todoFile,
-              category: category));
+              category: category,
+            ),
+          );
         }
         for (final todo in category.todos) {
           final todoResults = searchTodo(todo, todoFile, category, text);
@@ -150,23 +158,31 @@ class TodoManager extends ChangeNotifier {
   }
 
   List<SearchResult> searchTodo(
-      Todo todo, TodoFile todoFile, Category category, String text) {
+    Todo todo,
+    TodoFile todoFile,
+    Category category,
+    String text,
+  ) {
     final results = <SearchResult>[];
     if (todoFile.id == null) {
-      logAndShowError(ref, 'TodoFile ${todoFile.name} document id is null');
+      logError('TodoFile ${todoFile.name} document id is null');
     }
     if (todoFile.id != null &&
         (contains(todo.name, text) || contains(todo.notes, text))) {
-      results.add(SearchResult(
+      results.add(
+        SearchResult(
           searchType: SearchType.todo,
           fullText: todo.name,
           path: ResultPath(
-              todoFileId: todoFile.id!,
-              categoryId: category.id,
-              todoId: todo.id),
+            todoFileId: todoFile.id!,
+            categoryId: category.id,
+            todoId: todo.id,
+          ),
           todoFile: todoFile,
           category: category,
-          todo: todo));
+          todo: todo,
+        ),
+      );
     }
     if (todo.children.isNotEmpty) {
       for (final childTodo in todo.children) {
@@ -182,8 +198,14 @@ class TodoManager extends ChangeNotifier {
   void _sendFileSearch(SearchResult searchResult) {
     final index = selectFile(searchResult.path.todoFileId);
     if (index != -1) {
-      ref?.read(searchBlocProvider).add(SearchEvent.selectEvent(SelectionState(
-          todoFileId: searchResult.path.todoFileId, fileIndex: index)));
+      ref
+          ?.read(searchBus)
+          .fire(
+            SelectionState(
+              todoFileId: searchResult.path.todoFileId,
+              fileIndex: index,
+            ),
+          );
     }
   }
 
@@ -192,11 +214,16 @@ class TodoManager extends ChangeNotifier {
     if (index != -1) {
       final categoryIndex = selectCategory(index, searchResult.path.categoryId);
       if (categoryIndex != -1) {
-        ref?.read(searchBlocProvider).add(SearchEvent.selectEvent(SelectionState(
-            todoFileId: searchResult.path.todoFileId,
-            fileIndex: index,
-            categoryIndex: categoryIndex,
-            categoryId: searchResult.path.categoryId)));
+        ref
+            ?.read(searchBus)
+            .fire(
+              SelectionState(
+                todoFileId: searchResult.path.todoFileId,
+                fileIndex: index,
+                categoryIndex: categoryIndex,
+                categoryId: searchResult.path.categoryId,
+              ),
+            );
       }
     }
   }
@@ -206,22 +233,15 @@ class TodoManager extends ChangeNotifier {
     if (index != -1) {
       final categoryIndex = selectCategory(index, searchResult.path.categoryId);
       if (categoryIndex != -1) {
-        ref?.read(searchBus).fire(SelectionState(
-          todoFileId: searchResult.path.todoFileId,
-          fileIndex: index,
-          categoryIndex: categoryIndex,
-          categoryId: searchResult.path.categoryId,
-          todoId: searchResult.path.todoId!,
-        ),);
-        ref?.read(searchBlocProvider).add(
-              SearchEvent.selectEvent(
-                SelectionState(
-                  todoFileId: searchResult.path.todoFileId,
-                  fileIndex: index,
-                  categoryIndex: categoryIndex,
-                  categoryId: searchResult.path.categoryId,
-                  todoId: searchResult.path.todoId!,
-                ),
+        ref
+            ?.read(searchBus)
+            .fire(
+              SelectionState(
+                todoFileId: searchResult.path.todoFileId,
+                fileIndex: index,
+                categoryIndex: categoryIndex,
+                categoryId: searchResult.path.categoryId,
+                todoId: searchResult.path.todoId!,
               ),
             );
       }
@@ -244,16 +264,16 @@ class TodoManager extends ChangeNotifier {
 
   TodoFile? findTodoFile(int? id) {
     if (id == null) {
-      logAndShowError(
-          ref, 'findTodoFile: id is null');
+      logError('findTodoFile: id is null');
       return null;
     }
     return todoFiles.files.firstWhereOrNull((todoFile) => todoFile.id == id);
   }
 
   void replaceUpdatedTodoFile(TodoFile todoFile) {
-    final index = todoFiles.files
-        .indexWhere((existingFile) => todoFile.id == existingFile.id);
+    final index = todoFiles.files.indexWhere(
+      (existingFile) => todoFile.id == existingFile.id,
+    );
     if (index != -1) {
       todoFiles.files[index] = todoFile;
     }
@@ -289,11 +309,11 @@ class TodoManager extends ChangeNotifier {
 
   Category? findCategory(List<Category>? categories, int? id) {
     if (categories == null) {
-      logAndShowError(ref, 'findCategory: categories is null');
+      logError('findCategory: categories is null');
       return null;
     }
     if (id == null) {
-      logAndShowError(ref, 'findCategory: id is null');
+      logError('findCategory: id is null');
       return null;
     }
     return categories.firstWhereOrNull((category) => category.id == id);
@@ -301,12 +321,12 @@ class TodoManager extends ChangeNotifier {
 
   Category? findCategoryInTodoFile(TodoFile? todoFile, int? id) {
     if (todoFile == null || id == null) {
-      logAndShowError(
-          ref, 'findCategoryInTodoFile: todoFile is $todoFile and id is $id');
+      logError('findCategoryInTodoFile: todoFile is $todoFile and id is $id');
       return null;
     }
-    return todoFile.categories
-        .firstWhereOrNull((category) => category.id == id);
+    return todoFile.categories.firstWhereOrNull(
+      (category) => category.id == id,
+    );
   }
 
   Category? findFileCategory(int? todoFileId, int? categoryId) {
@@ -314,8 +334,9 @@ class TodoManager extends ChangeNotifier {
   }
 
   void replaceUpdatedCategory(TodoFile todoFile, Category category) {
-    final index = todoFile.categories
-        .indexWhere((existingCategory) => category.id == existingCategory.id);
+    final index = todoFile.categories.indexWhere(
+      (existingCategory) => category.id == existingCategory.id,
+    );
     if (index != -1) {
       todoFile.categories[index] = category;
     }
@@ -327,7 +348,7 @@ class TodoManager extends ChangeNotifier {
 
   Todo? findTodoFromList(List<Todo>? todos, int? id) {
     if (todos == null || id == null) {
-      logAndShowError(ref, 'findTodoFromList:todos: $todos id: $id');
+      logError('findTodoFromList:todos: $todos id: $id');
       return null;
     }
     return todos.firstWhereOrNull((todo) => todo.id == id);
@@ -354,44 +375,49 @@ class TodoManager extends ChangeNotifier {
   Todo? findDeepTodo(int? todoFileId, int? categoryId, int? id) {
     final todoFile = findTodoFile(todoFileId);
     if (todoFile == null) {
-      logAndShowError(
-          ref, 'findTodoInCategory:Could not find todo file id: $todoFileId');
+      logError('findTodoInCategory:Could not find todo file id: $todoFileId');
       return null;
     }
     final category = findCategoryInTodoFile(todoFile, categoryId);
     if (category == null) {
-      logAndShowError(
-          ref, 'findTodoInCategory:Could not find category id: $categoryId');
+      logError('findTodoInCategory:Could not find category id: $categoryId');
       return null;
     }
     return findTodoInChildren(category.todos, id);
   }
 
-  int? findTodoIndex(int? todoFileId, int? categoryId, int? id) {
+  int findTodoFileIndex(int todoFileId) {
+    return todoFiles.files.indexWhere((todoFile) => todoFile.id == todoFileId);
+  }
+
+  int findCategoryIndex(int todoFileId, int categoryId) {
+    final todoFile = findTodoFile(todoFileId);
+    return todoFile?.categories.indexWhere((category) => category.id == categoryId) ?? -1;
+  }
+
+  int findTodoIndex(int? todoFileId, int? categoryId, int? id) {
     final todoFile = findTodoFile(todoFileId);
     if (todoFile == null) {
-      logAndShowError(
-          ref, 'findTodoInCategory:Could not find todo file id: $todoFileId');
-      return null;
+      logError('findTodoInCategory:Could not find todo file id: $todoFileId');
+      return -1;
     }
     final category = findCategoryInTodoFile(todoFile, categoryId);
     if (category == null) {
-      logAndShowError(
-          ref, 'findTodoInCategory:Could not find category id: $categoryId');
-      return null;
+      logError('findTodoInCategory:Could not find category id: $categoryId');
+      return -1;
     }
     return findTodoIndexInChildren(category.todos, id);
   }
 
-  int? findTodoIndexInChildren(List<Todo> children, int? id) {
-    int? resultIndex;
+  int findTodoIndexInChildren(List<Todo> children, int? id) {
+    int resultIndex = -1;
     children.forEachIndexed((index, todo) {
       if (todo.id == id) {
         resultIndex = index;
         return;
       }
       final foundIndex = findTodoIndexInChildren(todo.children, id);
-      if (foundIndex != null) {
+      if (foundIndex != -1) {
         resultIndex = foundIndex;
         return;
       }
@@ -400,33 +426,32 @@ class TodoManager extends ChangeNotifier {
   }
 
   Todo? findTodoInParentTodo(
-      int? todoFileId, int? categoryId, int? parentId, int? id) {
+    int? todoFileId,
+    int? categoryId,
+    int? parentId,
+    int? id,
+  ) {
     final todoFile = findTodoFile(todoFileId);
     if (todoFile == null) {
-      logAndShowError(
-          ref, 'findTodoInCategory:Could not find todo file id: $todoFileId');
+      logError('findTodoInCategory:Could not find todo file id: $todoFileId');
       return null;
     }
     final category = findCategoryInTodoFile(todoFile, categoryId);
     if (category == null) {
-      logAndShowError(
-          ref, 'findTodoInCategory:Could not find category id: $categoryId');
+      logError('findTodoInCategory:Could not find category id: $categoryId');
       return null;
     }
     if (parentId == null) {
-      logAndShowError(
-          ref, 'findTodoInParentTodo: parentId is null');
+      logError('findTodoInParentTodo: parentId is null');
       return null;
     }
     if (id == null) {
-      logAndShowError(
-          ref, 'findTodoInParentTodo: id is null');
+      logError('findTodoInParentTodo: id is null');
       return null;
     }
     final parentTodo = findTodoInChildren(category.todos, parentId);
     if (parentTodo == null) {
-      logAndShowError(
-          ref, 'findTodoInCategory:Could not find parent id: $parentId');
+      logError('findTodoInCategory:Could not find parent id: $parentId');
       return null;
     }
     return findTodoInChildren(parentTodo.children, id);
@@ -434,8 +459,7 @@ class TodoManager extends ChangeNotifier {
 
   Todo? findTodoInChildren(List<Todo> children, int? id) {
     if (id == null) {
-      logAndShowError(
-          ref, 'findTodoInChildren: Id is null');
+      logError('findTodoInChildren: Id is null');
       return null;
     }
     for (final todo in children) {
@@ -493,7 +517,7 @@ class TodoManager extends ChangeNotifier {
 
   int selectFile(int? todoFileId) {
     if (todoFileId == null) {
-      logAndShowError(ref, 'selectFile:todoFileId is null');
+      logError('selectFile:todoFileId is null');
       return -1;
     }
     final index = todoFiles.files.indexWhere((todoFile) {
@@ -507,7 +531,7 @@ class TodoManager extends ChangeNotifier {
 
   int selectCategory(int fileIndex, int? categoryId) {
     if (categoryId == null) {
-      logAndShowError(ref, 'categoryId is null');
+      logError('categoryId is null');
       return -1;
     }
     final todoFile = todoFiles.files[fileIndex];
@@ -569,16 +593,14 @@ class TodoManager extends ChangeNotifier {
     if (index != -1) {
       todoFiles.files[index] = todoFile;
     } else {
-      logAndShowError(
-          ref, 'updateTodoFile: Could not find index for ${todoFile.name}');
+      logError('updateTodoFile: Could not find index for ${todoFile.name}');
     }
   }
 
   void updateCategory(Category category) {
     final todoFile = findTodoFile(category.todoFileId!);
     if (todoFile == null) {
-      logAndShowError(
-          ref, 'updateCategory: todofile is null for ${category.name}');
+      logError('updateCategory: todofile is null for ${category.name}');
       return;
     }
     final index = categoryIndex(todoFile.categories, category.id!);
@@ -590,18 +612,17 @@ class TodoManager extends ChangeNotifier {
   void updateTodo(Todo todo) {
     final todoFile = findTodoFile(todo.todoFileId!);
     if (todoFile == null) {
-      logAndShowError(ref, 'updateTodo: todofile is null for ${todo.name}');
+      logError('updateTodo: todofile is null for ${todo.name}');
       return;
     }
     final category = findCategory(todoFile.categories, todo.categoryId!);
     if (category == null) {
-      logAndShowError(ref, 'updateTodo: category is null for ${todo.name}');
+      logError('updateTodo: category is null for ${todo.name}');
       return;
     }
     // Check for a parent id
     if (todo.id == null && todo.parentTodoId == null) {
-      logAndShowError(
-          ref, 'updateTodo: id and parent id is null for ${todo.name}');
+      logError('updateTodo: id and parent id is null for ${todo.name}');
       return;
     } else if (todo.id == null && todo.parentTodoId != null) {
       final parentTodo = findTodoInChildren(category.todos, todo.parentTodoId);
@@ -610,12 +631,12 @@ class TodoManager extends ChangeNotifier {
         if (index != -1) {
           parentTodo.children[index] = todo;
         } else {
-          logAndShowError(ref,
-              'Could not find index for parent ${parentTodo.name} and todo ${todo.name}');
+          logError(
+            'Could not find index for parent ${parentTodo.name} and todo ${todo.name}',
+          );
         }
       } else {
-        logAndShowError(
-            ref, 'Could not find parent todo for todo ${todo.name}');
+        logError('Could not find parent todo for todo ${todo.name}');
       }
       return;
     } else if (todo.id != null && todo.parentTodoId != null) {
@@ -623,7 +644,7 @@ class TodoManager extends ChangeNotifier {
       if (parentTodo != null) {
         replaceTodo(parentTodo.children, todo);
       } else {
-        logAndShowError(ref, 'Could not find parent todo for ${todo.name}');
+        logError('Could not find parent todo for ${todo.name}');
       }
       return;
     }
@@ -636,8 +657,7 @@ class TodoManager extends ChangeNotifier {
       if (index != -1) {
         category.todos[index] = todo;
       } else {
-        logAndShowError(
-            ref, 'updateTodo: Could not find index for ${todo.name}');
+        logError('updateTodo: Could not find index for ${todo.name}');
       }
     }
   }
@@ -661,8 +681,9 @@ class TodoManager extends ChangeNotifier {
     if (childIndex != -1) {
       parentTodo.children[childIndex] = todo;
     } else {
-      logAndShowError(ref,
-          'updateTodoInParent: Could not find child index in parent todo. ${todo.name}');
+      logError(
+        'updateTodoInParent: Could not find child index in parent todo. ${todo.name}',
+      );
     }
   }
 
@@ -676,28 +697,28 @@ class TodoManager extends ChangeNotifier {
   void deleteCategory(Category category) {
     final todoFile = findTodoFile(category.todoFileId!);
     if (todoFile == null) {
-      logAndShowError(
-          ref, 'deleteCategory: todofile is null for ${category.name}');
+      logError('deleteCategory: todofile is null for ${category.name}');
       return;
     }
     final index = categoryIndex(todoFile.categories, category.id!);
     if (index != -1) {
       todoFile.categories.removeAt(index);
     } else {
-      logAndShowError(ref,
-          'Did not find category ${category.name} in file: ${todoFile.name}');
+      logError(
+        'Did not find category ${category.name} in file: ${todoFile.name}',
+      );
     }
   }
 
   void deleteTodo(Todo todo) {
     final todoFile = findTodoFile(todo.todoFileId!);
     if (todoFile == null) {
-      logAndShowError(ref, 'deleteTodo: todofile is null for ${todo.name}');
+      logError('deleteTodo: todofile is null for ${todo.name}');
       return;
     }
     final category = findCategory(todoFile.categories, todo.categoryId!);
     if (category == null) {
-      logAndShowError(ref, 'deleteTodo: category is null for ${todo.name}');
+      logError('deleteTodo: category is null for ${todo.name}');
       return;
     }
     final index = todoIndex(category.todos, todo.id!);
@@ -709,11 +730,12 @@ class TodoManager extends ChangeNotifier {
         if (parentTodo != null) {
           parentTodo.children.remove(todo);
         } else {
-          logAndShowError(ref, 'Could not find parent todo for ${todo.name}');
+          logError('Could not find parent todo for ${todo.name}');
         }
       } else {
-        logAndShowError(ref,
-            'Did not find todo ${todo.name} in category: ${category.name}');
+        logError(
+          'Did not find todo ${todo.name} in category: ${category.name}',
+        );
       }
     }
   }
@@ -723,39 +745,48 @@ class TodoManager extends ChangeNotifier {
     if (category != null) {
       final todoFile = findTodoFile(todoFileId);
       if (todoFile != null) {
-        final updatedCategory =
-            category.copyWith(todos: [...category.todos, todo]);
+        final updatedCategory = category.copyWith(
+          todos: [...category.todos, todo],
+        );
         replaceUpdatedCategory(todoFile, updatedCategory);
       } else {
-        logAndShowError(ref,
-            'Could not find todoFile for todoFileId: $todoFileId categoryId: $categoryId and Todo: ${todo.name}');
+        logError(
+          'Could not find todoFile for todoFileId: $todoFileId categoryId: $categoryId and Todo: ${todo.name}',
+        );
       }
     } else {
-      logAndShowError(ref,
-          'Could not find category for todoFileId: $todoFileId categoryId: $categoryId and Todo: ${todo.name}');
+      logError(
+        'Could not find category for todoFileId: $todoFileId categoryId: $categoryId and Todo: ${todo.name}',
+      );
     }
   }
 
   void addTodoToParent(Todo todo) {
-    final parentTodo = findDeepTodo(todo.todoFileId, todo.categoryId, todo.parentTodoId);
+    final parentTodo = findDeepTodo(
+      todo.todoFileId,
+      todo.categoryId,
+      todo.parentTodoId,
+    );
     if (parentTodo != null) {
-      final updatedParentTodo =
-      parentTodo.copyWith(children: [...parentTodo.children, todo]);
+      final updatedParentTodo = parentTodo.copyWith(
+        children: [...parentTodo.children, todo],
+      );
       updateTodo(updatedParentTodo);
     } else {
-      logAndShowError(ref,
-          'addNewTodoToParent: Could not find parent id for todo ${todo.name}');
+      logError(
+        'addNewTodoToParent: Could not find parent id for todo ${todo.name}',
+      );
     }
   }
 
   // This method assumes all ids are set and checks if there is a parent id
   void addTodo(Todo todo) {
     if (todo.todoFileId == null) {
-      logAndShowError(ref, 'addTodo: todoFileId is null');
+      logError('addTodo: todoFileId is null');
       return;
     }
     if (todo.categoryId == null) {
-      logAndShowError(ref, 'addTodo: categoryId is null');
+      logError('addTodo: categoryId is null');
       return;
     }
     if (todo.parentTodoId != null) {

@@ -11,8 +11,8 @@ class TextEditor extends ConsumerStatefulWidget {
   final String initialText;
   final Color textColor;
   final TextChangedListener changedListener;
-  bool editing;
-  TextEditor({super.key, required this.initialText,
+  final bool editing;
+  const TextEditor({super.key, required this.initialText,
     required this.textColor,
     required this.editing,
     required this.changedListener,
@@ -26,6 +26,8 @@ class TextEditor extends ConsumerStatefulWidget {
 class _TextEditorState extends ConsumerState<TextEditor> {
   late TextEditingController textController;
   late FocusNode textFocusNode;
+  bool editing = false;
+
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +40,7 @@ class _TextEditorState extends ConsumerState<TextEditor> {
                 ((event.logicalKey == LogicalKeyboardKey.enter) ||
                     (event.logicalKey == LogicalKeyboardKey.escape))) {
               setState(() {
-                widget.editing = false;
+                editing = false;
                 if (event.logicalKey == LogicalKeyboardKey.escape) {
                   widget.changedListener(null);
                 } else {
@@ -52,7 +54,7 @@ class _TextEditorState extends ConsumerState<TextEditor> {
               setState(() {
                 textController.text = newValue;
                 widget.changedListener(textController.text);
-                widget.editing = false;
+                editing = false;
               });
             },
             autofocus: true,
@@ -80,11 +82,12 @@ class _TextEditorState extends ConsumerState<TextEditor> {
   @override
   void initState() {
     super.initState();
+    editing = widget.editing;
     textFocusNode = FocusNode();
     textFocusNode.addListener(() {
       if (!textFocusNode.hasFocus && widget.editing) {
         setState(() {
-          widget.editing = false;
+          editing = false;
         });
       }
     });

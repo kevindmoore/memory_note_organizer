@@ -1,0 +1,70 @@
+name: memory_notes_organizer
+description: "Note and Todo Application"
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.7.0 <4.0.0'
+
+dependencies:
+  auto_route: ^9.3.0+1
+  auto_size_text: ^3.0.0
+  collection: ^1.19.1
+  colorize_lumberdash: ^3.0.0
+  desktop_window: ^0.4.2
+  event_bus: ^2.0.1
+  file_picker: ^9.0.1
+  flutter:
+    sdk: flutter
+  flutter_dotenv: ^5.2.1
+  flutter_fancy_tree_view: ^1.6.0
+  flutter_riverpod: ^2.6.1
+  flutter_svg: ^2.0.17
+  freezed_annotation: ^3.0.0
+#  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+  lumberdash: ^3.0.0
+  multi_split_view: ^3.6.0
+  riverpod_annotation: ^2.6.1
+  shared_preferences: ^2.5.2
+  supa_manager:
+    path: ../supa_manager
+  utilities:
+    path: ../utilities/
+  menubar:
+    git:
+      #      url: git://github.com/google/flutter-desktop-embedding.git
+      url: https://github.com/google/flutter-desktop-embedding
+      path: plugins/menubar
+      ref: 12decbe0f592e14e03223f6f2c0c7e0e2dbd70a1
+  flutter_adaptive_scaffold: ^0.3.2
+  xml: ^6.5.0
+  responsive_framework: ^1.5.1
+  focus_detector: ^2.0.1
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^5.0.0
+  build_runner: ^2.4.15
+  json_serializable: ^6.9.4
+#  freezed: ^2.5.8
+  freezed: ^3.0.3
+  riverpod_generator: ^2.6.4
+  riverpod_lint: ^2.6.4
+  auto_route_generator: ^9.3.1
+
+dependency_overrides:
+  app_links: 6.3.0
+
+flutter:
+
+  uses-material-design: true
+
+  assets:
+    - assets/secrets.json
+    - assets/logging.json
+    - .env

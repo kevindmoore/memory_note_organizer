@@ -1,10 +1,9 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:memory_notes_organizer/providers.dart';
 import 'package:utilities/utilities.dart';
 
-import '../../providers.dart';
-import '../../viewmodels/main_screen_model.dart';
 
 class NameRow extends ConsumerStatefulWidget {
   const NameRow({super.key});
@@ -14,13 +13,11 @@ class NameRow extends ConsumerStatefulWidget {
 }
 
 class _NameRowState extends ConsumerState<NameRow> {
-  late MainScreenModel mainScreenModel;
   @override
   Widget build(BuildContext context) {
     if (usePhone(MediaQuery.of(context))) {
       return Container();
     }
-    mainScreenModel = ref.watch(mainScreenModelProvider);
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Container(
@@ -45,7 +42,7 @@ class _NameRowState extends ConsumerState<NameRow> {
                   child: const Text('Change Theme'),
                   onTap: () {
                     setState(() {
-                      mainScreenModel.changeTheme = true;
+                      // mainScreenModel.changeTheme = true;
                     });
                   },
                 ),

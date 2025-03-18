@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:memory_notes_organizer/models/search_result.dart';
+import 'package:memory_notes_organizer/providers.dart';
+import 'package:memory_notes_organizer/todos/todo_manager.dart';
 import 'package:utilities/utilities.dart';
 
-import '../../bloc/blocs/other_bloc.dart';
-import '../../bloc/blocs/search_bloc.dart';
-import '../../models/search_result.dart';
-import '../../todos/todo_manager.dart';
-import '../providers.dart';
 
 class SearchPanel extends ConsumerStatefulWidget {
   const SearchPanel({super.key});
@@ -35,101 +33,109 @@ class _SearchPanelState extends ConsumerState<SearchPanel> {
 
   @override
   Widget build(BuildContext context) {
+    var theme = ref.watch(themeProvider);
     final todoManager = ref.watch(todoManagerProvider);
     final searchText = ref.watch(searchTextStateProvider);
     searchTextController.text = searchText;
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-          return CustomScrollView(slivers: [
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: SizedBox(
-                width: constraints.maxWidth,
-                height: constraints.minHeight,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.center,
+    return Container(
+      decoration: createGradient(
+        theme.startGradientColor,
+        theme.endGradientColor,
+      ),
+      child:
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              return CustomScrollView(slivers: [
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: SizedBox(
+                    width: constraints.maxWidth,
+                    height: constraints.minHeight,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        IconButton(
-                          tooltip: 'Search',
-                          icon: const Icon(
-                            Icons.search,
-                            color: Colors.black,
-                          ),
-                          onPressed: () {
-                            ref.read(searchTextStateProvider.notifier).state =
-                                searchTextController.text;
-                            startSearch(context, searchTextController.text,
-                                todoManager);
-                            final currentFocus = FocusScope.of(context);
-                            if (!currentFocus.hasPrimaryFocus) {
-                              currentFocus.unfocus();
-                            }
-                          },
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            IconButton(
+                              tooltip: 'Search',
+                              icon: const Icon(
+                                Icons.search,
+                                color: Colors.black,
+                              ),
+                              onPressed: () {
+                                ref.read(searchTextStateProvider.notifier).state =
+                                    searchTextController.text;
+                                startSearch(context, searchTextController.text,
+                                    todoManager);
+                                final currentFocus = FocusScope.of(context);
+                                if (!currentFocus.hasPrimaryFocus) {
+                                  currentFocus.unfocus();
+                                }
+                              },
+                            ),
+                            IconButton(
+                              tooltip: 'Clear',
+                              icon: const Icon(
+                                Icons.cancel_outlined,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  searchTextController.clear();
+                                  ref.read(searchTextStateProvider.notifier).state =
+                                      '';
+                                  textFocusNode.requestFocus();
+                                });
+                              },
+                            ),
+                            const SizedBox(
+                              width: 8,
+                            ),
+                            Expanded(
+                                child: TextField(
+                              focusNode: textFocusNode,
+                              cursorColor: Colors.black,
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                                hintText: 'Find notes or folders...',
+                                // hintStyle: TextStyle(color: Colors.black),
+                              ),
+                              // autofocus: true,
+                              style: getMediumTextStyle(theme.textColor),
+                              textInputAction: TextInputAction.done,
+                              onSubmitted: (value) {
+                                var searchText = searchTextController.text.trim();
+                                ref.read(searchTextStateProvider.notifier).state =
+                                    searchText;
+                                startSearch(context, searchText,
+                                    todoManager);
+                              },
+                              controller: searchTextController,
+                            )),
+                          ],
                         ),
-                        IconButton(
-                          tooltip: 'Clear',
-                          icon: const Icon(
-                            Icons.cancel_outlined,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              searchTextController.clear();
-                              ref.read(searchTextStateProvider.notifier).state =
-                                  '';
-                              textFocusNode.requestFocus();
-                            });
-                          },
-                        ),
+                        const Divider(),
+                        Text('Matches', style: getMediumTextStyle(lightGreyColor)),
                         const SizedBox(
-                          width: 8,
+                          height: 8,
                         ),
-                        Expanded(
-                            child: TextField(
-                          focusNode: textFocusNode,
-                          cursorColor: Colors.black,
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            hintText: 'Find notes or folders...',
-                            // hintStyle: TextStyle(color: Colors.black),
-                          ),
-                          autofocus: true,
-                          style: const TextStyle(color: Colors.black),
-                          textInputAction: TextInputAction.done,
-                          onSubmitted: (value) {
-                            ref.read(searchTextStateProvider.notifier).state =
-                                searchTextController.text;
-                            startSearch(context, searchTextController.text,
-                                todoManager);
-                          },
-                          controller: searchTextController,
-                        )),
+                        buildSearchResults(),
                       ],
                     ),
-                    const Divider(),
-                    Text('Matches', style: getMediumTextStyle(lightGreyColor)),
-                    const SizedBox(
-                      height: 8,
-                    ),
-                    buildSearchResults(),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-          ]);
-        },
-      ),
+              ]);
+            },
+          ),
+        ),
     );
   }
 
   void startSearch(BuildContext context, String text, TodoManager todoManager) {
-    ref.read(searchBlocProvider).add(const SearchEvent.searchStartEvent());
     final results = todoManager.search(text);
     if (results.isNotEmpty) {
       setState(() {
@@ -139,10 +145,11 @@ class _SearchPanelState extends ConsumerState<SearchPanel> {
   }
 
   Widget buildSearchResults() {
+    var theme = ref.watch(themeProvider);
     if (searchResults.isEmpty) {
-      return const Flexible(
+      return Flexible(
         child: Center(
-          child: Text('No Results'),
+          child: Text('No Results', style: getMediumTextStyle(theme.textColor)),
         ),
       );
     }
@@ -182,6 +189,7 @@ class _SearchPanelState extends ConsumerState<SearchPanel> {
             widgets.add(
               Text(
                 result.fullText,
+                style: getMediumTextStyle(theme.textColor),
               ),
             );
             widgets.add(const SizedBox(width: 8));
@@ -197,6 +205,7 @@ class _SearchPanelState extends ConsumerState<SearchPanel> {
                     notes,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
+                    style: getMediumTextStyle(theme.textColor),
                   ),
                 ),
               );
@@ -216,15 +225,7 @@ class _SearchPanelState extends ConsumerState<SearchPanel> {
                     ),
                   ),
                   onTap: () {
-                    ref
-                        .read(otherBlocProvider)
-                        .add(const OtherEvent.resetEvent());
-                    ref
-                        .read(otherBlocProvider)
-                        .add(const OtherEvent.showScreenEvent(Screen.home));
-                    ref
-                        .read(searchBlocProvider)
-                        .add(SearchEvent.searchEventResult(result));
+                    ref.read(searchBus).fire(result);
                   },
                 ));
           }),

@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,270 +10,154 @@ part of 'categories.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
-
-Category _$CategoryFromJson(Map<String, dynamic> json) {
-  return _Category.fromJson(json);
-}
 
 /// @nodoc
 mixin _$Category {
-  String get name => throw _privateConstructorUsedError;
-  @JsonKey(includeIfNull: false)
-  int? get id => throw _privateConstructorUsedError;
-  @JsonKey(includeIfNull: false)
-  int? get todoFileId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'user_id', includeIfNull: false)
-  String? get userId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'last_updated', includeIfNull: false)
-  DateTime? get lastUpdated => throw _privateConstructorUsedError;
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  List<Todo> get todos => throw _privateConstructorUsedError;
 
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
-  $CategoryCopyWith<Category> get copyWith =>
-      throw _privateConstructorUsedError;
+ String get name;@JsonKey(includeIfNull: false) int? get id;@JsonKey(includeIfNull: false) int? get todoFileId;@JsonKey(name: 'user_id', includeIfNull: false) String? get userId;@JsonKey(name: 'last_updated', includeIfNull: false) DateTime? get lastUpdated;@JsonKey(includeFromJson: false, includeToJson: false) List<Todo> get todos;
+/// Create a copy of Category
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$CategoryCopyWith<Category> get copyWith => _$CategoryCopyWithImpl<Category>(this as Category, _$identity);
+
+  /// Serializes this Category to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Category&&(identical(other.name, name) || other.name == name)&&(identical(other.id, id) || other.id == id)&&(identical(other.todoFileId, todoFileId) || other.todoFileId == todoFileId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.lastUpdated, lastUpdated) || other.lastUpdated == lastUpdated)&&const DeepCollectionEquality().equals(other.todos, todos));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,name,id,todoFileId,userId,lastUpdated,const DeepCollectionEquality().hash(todos));
+
+@override
+String toString() {
+  return 'Category(name: $name, id: $id, todoFileId: $todoFileId, userId: $userId, lastUpdated: $lastUpdated, todos: $todos)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $CategoryCopyWith<$Res> {
-  factory $CategoryCopyWith(Category value, $Res Function(Category) then) =
-      _$CategoryCopyWithImpl<$Res, Category>;
-  @useResult
-  $Res call(
-      {String name,
-      @JsonKey(includeIfNull: false) int? id,
-      @JsonKey(includeIfNull: false) int? todoFileId,
-      @JsonKey(name: 'user_id', includeIfNull: false) String? userId,
-      @JsonKey(name: 'last_updated', includeIfNull: false)
-      DateTime? lastUpdated,
-      @JsonKey(includeFromJson: false, includeToJson: false) List<Todo> todos});
-}
+abstract mixin class $CategoryCopyWith<$Res>  {
+  factory $CategoryCopyWith(Category value, $Res Function(Category) _then) = _$CategoryCopyWithImpl;
+@useResult
+$Res call({
+ String name,@JsonKey(includeIfNull: false) int? id,@JsonKey(includeIfNull: false) int? todoFileId,@JsonKey(name: 'user_id', includeIfNull: false) String? userId,@JsonKey(name: 'last_updated', includeIfNull: false) DateTime? lastUpdated,@JsonKey(includeFromJson: false, includeToJson: false) List<Todo> todos
+});
 
+
+
+
+}
 /// @nodoc
-class _$CategoryCopyWithImpl<$Res, $Val extends Category>
+class _$CategoryCopyWithImpl<$Res>
     implements $CategoryCopyWith<$Res> {
-  _$CategoryCopyWithImpl(this._value, this._then);
+  _$CategoryCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final Category _self;
+  final $Res Function(Category) _then;
 
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? name = null,
-    Object? id = freezed,
-    Object? todoFileId = freezed,
-    Object? userId = freezed,
-    Object? lastUpdated = freezed,
-    Object? todos = null,
-  }) {
-    return _then(_value.copyWith(
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      todoFileId: freezed == todoFileId
-          ? _value.todoFileId
-          : todoFileId // ignore: cast_nullable_to_non_nullable
-              as int?,
-      userId: freezed == userId
-          ? _value.userId
-          : userId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      lastUpdated: freezed == lastUpdated
-          ? _value.lastUpdated
-          : lastUpdated // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      todos: null == todos
-          ? _value.todos
-          : todos // ignore: cast_nullable_to_non_nullable
-              as List<Todo>,
-    ) as $Val);
-  }
+/// Create a copy of Category
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? id = freezed,Object? todoFileId = freezed,Object? userId = freezed,Object? lastUpdated = freezed,Object? todos = null,}) {
+  return _then(_self.copyWith(
+name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as int?,todoFileId: freezed == todoFileId ? _self.todoFileId : todoFileId // ignore: cast_nullable_to_non_nullable
+as int?,userId: freezed == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
+as String?,lastUpdated: freezed == lastUpdated ? _self.lastUpdated : lastUpdated // ignore: cast_nullable_to_non_nullable
+as DateTime?,todos: null == todos ? _self.todos : todos // ignore: cast_nullable_to_non_nullable
+as List<Todo>,
+  ));
 }
 
-/// @nodoc
-abstract class _$$CategoryImplCopyWith<$Res>
-    implements $CategoryCopyWith<$Res> {
-  factory _$$CategoryImplCopyWith(
-          _$CategoryImpl value, $Res Function(_$CategoryImpl) then) =
-      __$$CategoryImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {String name,
-      @JsonKey(includeIfNull: false) int? id,
-      @JsonKey(includeIfNull: false) int? todoFileId,
-      @JsonKey(name: 'user_id', includeIfNull: false) String? userId,
-      @JsonKey(name: 'last_updated', includeIfNull: false)
-      DateTime? lastUpdated,
-      @JsonKey(includeFromJson: false, includeToJson: false) List<Todo> todos});
 }
 
-/// @nodoc
-class __$$CategoryImplCopyWithImpl<$Res>
-    extends _$CategoryCopyWithImpl<$Res, _$CategoryImpl>
-    implements _$$CategoryImplCopyWith<$Res> {
-  __$$CategoryImplCopyWithImpl(
-      _$CategoryImpl _value, $Res Function(_$CategoryImpl) _then)
-      : super(_value, _then);
-
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? name = null,
-    Object? id = freezed,
-    Object? todoFileId = freezed,
-    Object? userId = freezed,
-    Object? lastUpdated = freezed,
-    Object? todos = null,
-  }) {
-    return _then(_$CategoryImpl(
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      todoFileId: freezed == todoFileId
-          ? _value.todoFileId
-          : todoFileId // ignore: cast_nullable_to_non_nullable
-              as int?,
-      userId: freezed == userId
-          ? _value.userId
-          : userId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      lastUpdated: freezed == lastUpdated
-          ? _value.lastUpdated
-          : lastUpdated // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      todos: null == todos
-          ? _value.todos
-          : todos // ignore: cast_nullable_to_non_nullable
-              as List<Todo>,
-    ));
-  }
-}
 
 /// @nodoc
 
 @JsonSerializable(explicitToJson: true)
-class _$CategoryImpl implements _Category {
-  const _$CategoryImpl(
-      {required this.name,
-      @JsonKey(includeIfNull: false) this.id,
-      @JsonKey(includeIfNull: false) this.todoFileId,
-      @JsonKey(name: 'user_id', includeIfNull: false) this.userId,
-      @JsonKey(name: 'last_updated', includeIfNull: false) this.lastUpdated,
-      @JsonKey(includeFromJson: false, includeToJson: false)
-      this.todos = const <Todo>[]});
+class _Category implements Category {
+  const _Category({required this.name, @JsonKey(includeIfNull: false) this.id, @JsonKey(includeIfNull: false) this.todoFileId, @JsonKey(name: 'user_id', includeIfNull: false) this.userId, @JsonKey(name: 'last_updated', includeIfNull: false) this.lastUpdated, @JsonKey(includeFromJson: false, includeToJson: false) this.todos = const <Todo>[]});
+  factory _Category.fromJson(Map<String, dynamic> json) => _$CategoryFromJson(json);
 
-  factory _$CategoryImpl.fromJson(Map<String, dynamic> json) =>
-      _$$CategoryImplFromJson(json);
+@override final  String name;
+@override@JsonKey(includeIfNull: false) final  int? id;
+@override@JsonKey(includeIfNull: false) final  int? todoFileId;
+@override@JsonKey(name: 'user_id', includeIfNull: false) final  String? userId;
+@override@JsonKey(name: 'last_updated', includeIfNull: false) final  DateTime? lastUpdated;
+@override@JsonKey(includeFromJson: false, includeToJson: false) final  List<Todo> todos;
 
-  @override
-  final String name;
-  @override
-  @JsonKey(includeIfNull: false)
-  final int? id;
-  @override
-  @JsonKey(includeIfNull: false)
-  final int? todoFileId;
-  @override
-  @JsonKey(name: 'user_id', includeIfNull: false)
-  final String? userId;
-  @override
-  @JsonKey(name: 'last_updated', includeIfNull: false)
-  final DateTime? lastUpdated;
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  final List<Todo> todos;
+/// Create a copy of Category
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$CategoryCopyWith<_Category> get copyWith => __$CategoryCopyWithImpl<_Category>(this, _$identity);
 
-  @override
-  String toString() {
-    return 'Category(name: $name, id: $id, todoFileId: $todoFileId, userId: $userId, lastUpdated: $lastUpdated, todos: $todos)';
-  }
-
-  @override
-  bool operator ==(dynamic other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$CategoryImpl &&
-            (identical(other.name, name) || other.name == name) &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.todoFileId, todoFileId) ||
-                other.todoFileId == todoFileId) &&
-            (identical(other.userId, userId) || other.userId == userId) &&
-            (identical(other.lastUpdated, lastUpdated) ||
-                other.lastUpdated == lastUpdated) &&
-            const DeepCollectionEquality().equals(other.todos, todos));
-  }
-
-  @JsonKey(ignore: true)
-  @override
-  int get hashCode => Object.hash(runtimeType, name, id, todoFileId, userId,
-      lastUpdated, const DeepCollectionEquality().hash(todos));
-
-  @JsonKey(ignore: true)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$CategoryImplCopyWith<_$CategoryImpl> get copyWith =>
-      __$$CategoryImplCopyWithImpl<_$CategoryImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$CategoryImplToJson(
-      this,
-    );
-  }
+@override
+Map<String, dynamic> toJson() {
+  return _$CategoryToJson(this, );
 }
 
-abstract class _Category implements Category {
-  const factory _Category(
-      {required final String name,
-      @JsonKey(includeIfNull: false) final int? id,
-      @JsonKey(includeIfNull: false) final int? todoFileId,
-      @JsonKey(name: 'user_id', includeIfNull: false) final String? userId,
-      @JsonKey(name: 'last_updated', includeIfNull: false)
-      final DateTime? lastUpdated,
-      @JsonKey(includeFromJson: false, includeToJson: false)
-      final List<Todo> todos}) = _$CategoryImpl;
-
-  factory _Category.fromJson(Map<String, dynamic> json) =
-      _$CategoryImpl.fromJson;
-
-  @override
-  String get name;
-  @override
-  @JsonKey(includeIfNull: false)
-  int? get id;
-  @override
-  @JsonKey(includeIfNull: false)
-  int? get todoFileId;
-  @override
-  @JsonKey(name: 'user_id', includeIfNull: false)
-  String? get userId;
-  @override
-  @JsonKey(name: 'last_updated', includeIfNull: false)
-  DateTime? get lastUpdated;
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  List<Todo> get todos;
-  @override
-  @JsonKey(ignore: true)
-  _$$CategoryImplCopyWith<_$CategoryImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Category&&(identical(other.name, name) || other.name == name)&&(identical(other.id, id) || other.id == id)&&(identical(other.todoFileId, todoFileId) || other.todoFileId == todoFileId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.lastUpdated, lastUpdated) || other.lastUpdated == lastUpdated)&&const DeepCollectionEquality().equals(other.todos, todos));
 }
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,name,id,todoFileId,userId,lastUpdated,const DeepCollectionEquality().hash(todos));
+
+@override
+String toString() {
+  return 'Category(name: $name, id: $id, todoFileId: $todoFileId, userId: $userId, lastUpdated: $lastUpdated, todos: $todos)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$CategoryCopyWith<$Res> implements $CategoryCopyWith<$Res> {
+  factory _$CategoryCopyWith(_Category value, $Res Function(_Category) _then) = __$CategoryCopyWithImpl;
+@override @useResult
+$Res call({
+ String name,@JsonKey(includeIfNull: false) int? id,@JsonKey(includeIfNull: false) int? todoFileId,@JsonKey(name: 'user_id', includeIfNull: false) String? userId,@JsonKey(name: 'last_updated', includeIfNull: false) DateTime? lastUpdated,@JsonKey(includeFromJson: false, includeToJson: false) List<Todo> todos
+});
+
+
+
+
+}
+/// @nodoc
+class __$CategoryCopyWithImpl<$Res>
+    implements _$CategoryCopyWith<$Res> {
+  __$CategoryCopyWithImpl(this._self, this._then);
+
+  final _Category _self;
+  final $Res Function(_Category) _then;
+
+/// Create a copy of Category
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? name = null,Object? id = freezed,Object? todoFileId = freezed,Object? userId = freezed,Object? lastUpdated = freezed,Object? todos = null,}) {
+  return _then(_Category(
+name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as int?,todoFileId: freezed == todoFileId ? _self.todoFileId : todoFileId // ignore: cast_nullable_to_non_nullable
+as int?,userId: freezed == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
+as String?,lastUpdated: freezed == lastUpdated ? _self.lastUpdated : lastUpdated // ignore: cast_nullable_to_non_nullable
+as DateTime?,todos: null == todos ? _self.todos : todos // ignore: cast_nullable_to_non_nullable
+as List<Todo>,
+  ));
+}
+
+
+}
+
+// dart format on

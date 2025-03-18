@@ -1,8 +1,23 @@
 import 'package:collection/collection.dart';
+import 'package:lumberdash/lumberdash.dart';
+import 'package:memory_notes_organizer/tree/tree_node.dart';
 
-import '../ui/tree/tree_node.dart'; // <- required or firstWhereOrNull is not defined
+/// KEEP THIS AWAY from Freezed
 
 enum NodeType { root, file, category, todo }
+
+class TodoInfo {
+  int? todoFileId;
+  int? categoryId;
+  int? parentId;
+
+  TodoInfo({this.todoFileId, this.categoryId, this.parentId});
+
+  @override
+  String toString() {
+    return 'TodoInfo(todoFileId: $todoFileId, categoryId: $categoryId, parentId: $parentId)';
+  }
+}
 
 class Node {
   final String name;
@@ -12,12 +27,13 @@ class Node {
   final NodeType type;
   TodoInfo todoInfo;
 
-  Node(
-      {required this.name,
-      this.id,
-      required this.type,
-      this.previous,
-      required this.todoInfo});
+  Node({
+    required this.name,
+    this.id,
+    required this.type,
+    this.previous,
+    required this.todoInfo,
+  });
 
   @override
   String toString() {
@@ -34,20 +50,6 @@ class Node {
     children.clear();
   }
 
-  Node copyWith(
-      {String? newName, int? newId, Node? newPrevious, Node? newNext}) {
-    final updatedName = newName ?? name;
-    final updatedId = newId ?? id;
-    final updatedPrevious = newPrevious ?? previous;
-    return Node(
-      name: updatedName,
-      id: updatedId,
-      type: type,
-      todoInfo: todoInfo,
-      previous: updatedPrevious,
-    );
-  }
-
   Node? findTodoFileNode(Node rootNode, int? id) {
     if (id == null) {
       return null;
@@ -60,9 +62,7 @@ class Node {
   }
 
   void addChildren(List<Node> children) {
-    for (final node in children) {
-      addChildNode(node);
-    }
+    children.addAll(children);
   }
 
   Node? findCategoryNode(Node rootNode, int? id) {
@@ -74,6 +74,18 @@ class Node {
         if (categoryNode.id == id) {
           return categoryNode;
         }
+      }
+    }
+    return null;
+  }
+
+  Node? findParentTodoNode(Node rootNode, int? id) {
+    final todoNode = findTodoNode(rootNode, id);
+    if (todoNode != null) {
+      if (todoNode.todoInfo.parentId != null) {
+        return findTodoNode(rootNode, todoNode.todoInfo.parentId);
+      } else {
+        return findCategoryNode(rootNode, id);
       }
     }
     return null;
@@ -92,6 +104,69 @@ class Node {
       }
     }
     return null;
+  }
+
+  Node? findNodeById(Node rootNode, int? id) {
+    if (id == null) {
+      return null;
+    }
+    for (final fileNode in rootNode.children) {
+      if (fileNode.id == id) {
+        return fileNode;
+      }
+      for (final categoryNode in fileNode.children) {
+        if (categoryNode.id == id) {
+          return categoryNode;
+        }
+        final foundTodoNode = recursiveIdSearch(categoryNode, id);
+        if (foundTodoNode != null) {
+          return foundTodoNode;
+        }
+      }
+    }
+    return null;
+  }
+
+  int findNodeIndex(Node rootNode, int? id) {
+    if (id == null) {
+      return -1;
+    }
+    int count = -1; // Start at -1 to account for root
+    final foundNode = findNodeById(rootNode, id);
+    if (foundNode == null) {
+      return -1;
+    }
+    Node? currentParentNode = foundNode.previous;
+    Node? currentNode = foundNode;
+    while (currentParentNode != null && currentParentNode != rootNode) {
+      switch (currentParentNode.type) {
+        case NodeType.root:
+        case NodeType.file:
+          final index = currentParentNode.children.indexOf(currentNode!);
+          logMessage('Found index of $index for node: ${currentNode.name}');
+          if (index != -1) {
+            count += index;
+          }
+          break;
+        case NodeType.category:
+          final index = currentParentNode.children.indexOf(currentNode!);
+          logMessage('Found index of $index for node: ${currentNode.name}');
+          if (index != -1) {
+            count += index;
+          }
+          break;
+        case NodeType.todo:
+          final index = currentParentNode.previous != null ? currentParentNode.previous!.children.indexOf(currentNode!) : -1;
+          logMessage('Found index of $index for node: ${currentNode?.name}');
+          if (index != -1) {
+            count += index;
+          }
+          break;
+      }
+      currentNode = currentParentNode;
+      currentParentNode = currentParentNode.previous;
+    }
+    return count;
   }
 
   int findTodoNodeIndex(Node rootNode, int? id) {
@@ -151,7 +226,7 @@ class Node {
       }
       for (final categoryNode in fileNode.children) {
         if (categoryNode.id == id) {
-          fileNode.children.remove(fileNode);
+          fileNode.children.remove(categoryNode);
           return;
         }
         final foundTodo = recursiveTodoDelete(categoryNode, id);
@@ -175,69 +250,63 @@ class Node {
     }
     return null;
   }
-}
 
-class TodoInfo {
-  int? todoFileId;
-  int? categoryId;
-  int? parentId;
-
-  TodoInfo({this.todoFileId, this.categoryId, this.parentId});
-
-  @override
-  String toString() {
-    return 'TodoInfo(todoFileId: $todoFileId, categoryId: $categoryId, parentId: $parentId)';
-  }
-}
-
-TreeNode? findTreeNode(TreeNode parent, Node child) {
-  final childId = child.id.toString();
-  for (final treeNode in parent.children) {
-    if (treeNode.id == childId) {
-      return treeNode;
-    }
-    if (treeNode.hasChildren) {
-      final foundChildNode = findTreeNode(treeNode, child);
-      if (foundChildNode != null) {
-        return foundChildNode;
+  TreeNode? findTreeNode(TreeNode parent, Node child) {
+    final childId = child.id.toString();
+    for (final treeNode in parent.children) {
+      if (treeNode.id == childId) {
+        return treeNode;
+      }
+      if (treeNode.hasChildren) {
+        final foundChildNode = findTreeNode(treeNode, child);
+        if (foundChildNode != null) {
+          return foundChildNode;
+        }
       }
     }
+    return null;
   }
-  return null;
-}
 
-int indexOfTreeNode(TreeNode parent, Node child) {
-  var index = 0;
-  final childId = child.id.toString();
-  for (final treeNode in parent.children) {
-    if (treeNode.id == childId) {
-      return index;
-    }
-    index++;
-    if (treeNode.hasChildren) {
-      final foundIndex = indexOfTreeNode(treeNode, child);
-      if (foundIndex != -1) {
-        return foundIndex;
+  int indexOfTreeNode(TreeNode parent, Node child) {
+    var index = 0;
+    final childId = child.id.toString();
+    for (final treeNode in parent.children) {
+      if (treeNode.id == childId) {
+        return index;
+      }
+      index++;
+      if (treeNode.hasChildren) {
+        final foundIndex = indexOfTreeNode(treeNode, child);
+        if (foundIndex != -1) {
+          return foundIndex;
+        }
       }
     }
+    return -1;
   }
-  return -1;
-}
 
-int indexOfNode(Node parent, Node child) {
-  var index = 0;
-  final childId = child.id;
-  for (final treeNode in parent.children) {
-    if (treeNode.id == childId) {
-      return index;
-    }
-    index++;
-    if (treeNode.children.isNotEmpty) {
-      final foundIndex = indexOfNode(treeNode, child);
-      if (foundIndex != -1) {
-        return foundIndex;
+  int indexOfNode(Node parent, Node child) {
+    var index = 0;
+    final childId = child.id;
+    for (final treeNode in parent.children) {
+      if (treeNode.id == childId) {
+        return index;
+      }
+      index++;
+      if (treeNode.children.isNotEmpty) {
+        final foundIndex = indexOfNode(treeNode, child);
+        if (foundIndex != -1) {
+          return foundIndex;
+        }
       }
     }
+    return -1;
   }
-  return -1;
+
+  void replaceChildNode(Node categoryNode, Node newTodoNode) {
+    final index = categoryNode.indexOfNode(categoryNode, newTodoNode);
+    if (index != -1) {
+      categoryNode.children[index] = newTodoNode;
+    }
+  }
 }

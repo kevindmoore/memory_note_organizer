@@ -1,4 +1,5 @@
-import 'package:note_master/models/type.dart';
+
+import 'package:memory_notes_organizer/models/type.dart';
 
 class UserField {
    String name;

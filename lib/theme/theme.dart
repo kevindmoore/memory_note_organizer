@@ -12,7 +12,7 @@ const themeKey = 'ThemeKey';
 enum Themes { seaFoam, softBlue, sunset, deepBlue, dark }
 
 @freezed
-class ThemeColors with _$ThemeColors {
+abstract class ThemeColors with _$ThemeColors {
   const factory ThemeColors(
       {required Color startGradientColor,
       required Color endGradientColor,
@@ -24,7 +24,7 @@ class ThemeColors with _$ThemeColors {
 class ThemeManager extends StateNotifier<ThemeColors> {
   final SharedPreferences prefs;
 
-  ThemeManager(this.prefs) : super(seafoamTheme) {
+  ThemeManager(this.prefs) : super(softBlueTheme) {
     if (prefs.containsKey(themeKey)) {
       final themeName = prefs.getString(themeKey);
       final theme =
@@ -37,7 +37,7 @@ class ThemeManager extends StateNotifier<ThemeColors> {
 
   void setThemeColor(ThemeColors theme) {
     state = theme;
-    var themeName = Themes.seaFoam.name;
+    var themeName = Themes.softBlue.name;
     if (theme == softBlueTheme) {
       themeName = Themes.softBlue.name;
     } else if (theme == sunsetTheme) {

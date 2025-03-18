@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lumberdash/lumberdash.dart';
 import 'package:supa_manager/supa_manager.dart';
 
 import '../models/models.dart';
 import '../todos/todo_manager.dart';
-import '../utils/utils.dart';
 import 'model_table_entries.dart';
 
 class CurrentStateTableHandler {
@@ -22,49 +22,45 @@ class CurrentStateTableHandler {
 
   Future<String?> getCurrentFilesString() async {
     final result = await databaseRepository.readEntries(currentStateTableData);
-    return result.when(success: (data) {
-      if (data is List<CurrentState>) {
+    switch (result) {
+      case Success(data: final data):
         if (data.isNotEmpty) {
           return data[0].currentFiles;
         }
-      }
-      return null;
-    }, failure: (Exception error) {
-      logAndShowError(ref, error.toString());
-      return null;
-    }, errorMessage: (int code, String? message) {
-      logAndShowError(ref, message!);
-      return null;
-    });
+        return null;
+      case Failure(error: final error):
+        logError( error.toString());
+      case ErrorMessage(message: final message, code: _):
+        logError( message!);
+    }
+    return null;
   }
 
   Future<CurrentState?> getCurrentState() async {
     final result = await databaseRepository.readEntries(currentStateTableData);
-    return result.when(success: (data) {
-      if (data is List<CurrentState>) {
+    switch (result) {
+      case Success(data: final data):
         if (data.isNotEmpty) {
           return data[0];
         }
-      }
-      return null;
-    }, failure: (Exception error) {
-      logAndShowError(ref, error.toString());
-      return null;
-    }, errorMessage: (int code, String? message) {
-      logAndShowError(ref, message!);
-      return null;
-    });
+        return null;
+      case Failure(error: final error):
+        logError( error.toString());
+      case ErrorMessage(message: final message, code: _):
+        logError( message!);
+    }
+    return null;
   }
 
   void updateCurrentFiles() async {
     final filesString = todoManager?.buildCurrentFilesString();
     if (filesString == null) {
-      logAndShowError(ref, 'updateCurrentFiles: filesString is null');
+      logError( 'updateCurrentFiles: filesString is null');
       return;
     }
     final result = await databaseRepository.readEntries(currentStateTableData);
-    await result.when(success: (data) async {
-      if (data is List<CurrentState>) {
+    switch (result) {
+      case Success(data: final data):
         if (data.isNotEmpty) {
           final currentState = data[0];
           await databaseRepository.updateTableEntry(
@@ -78,11 +74,10 @@ class CurrentStateTableHandler {
               currentStateTableData, CurrentStateTableEntry(currentState));
           // localRepo.updateCurrentState(currentState);
         }
-      }
-    }, failure: (Exception error) {
-      logAndShowError(ref, error.toString());
-    }, errorMessage: (int code, String? message) {
-      logAndShowError(ref, message!);
-    });
+      case Failure(error: final error):
+        logError( error.toString());
+      case ErrorMessage(message: final message, code: _):
+        logError( message!);
+    }
   }
 }
