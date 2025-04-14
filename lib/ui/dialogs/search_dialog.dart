@@ -235,7 +235,7 @@ class _SearchDialogState extends ConsumerState<SearchDialog> {
                   onTap: () {
                     final dialogState = ref.read(dialogStateProvider);
                     dialogState.searchDialogShowing = false;
-                    ref.read(searchBus).fire(result);
+                    ref.read(searchBusProvider).fire(result);
                     Navigator.pop(context);
                   },
                 ));

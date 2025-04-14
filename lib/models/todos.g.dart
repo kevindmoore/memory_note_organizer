@@ -14,6 +14,10 @@ _TodoFile _$TodoFileFromJson(Map<String, dynamic> json) => _TodoFile(
       json['last_updated'] == null
           ? null
           : DateTime.parse(json['last_updated'] as String),
+  createdAt:
+      json['created_at'] == null
+          ? null
+          : DateTime.parse(json['created_at'] as String),
 );
 
 Map<String, dynamic> _$TodoFileToJson(_TodoFile instance) => <String, dynamic>{
@@ -22,6 +26,8 @@ Map<String, dynamic> _$TodoFileToJson(_TodoFile instance) => <String, dynamic>{
   if (instance.userId case final value?) 'user_id': value,
   if (instance.lastUpdated?.toIso8601String() case final value?)
     'last_updated': value,
+  if (instance.createdAt?.toIso8601String() case final value?)
+    'created_at': value,
 };
 
 _Todo _$TodoFromJson(Map<String, dynamic> json) => _Todo(
@@ -40,6 +46,10 @@ _Todo _$TodoFromJson(Map<String, dynamic> json) => _Todo(
       json['last_updated'] == null
           ? null
           : DateTime.parse(json['last_updated'] as String),
+  createdAt:
+      json['created_at'] == null
+          ? null
+          : DateTime.parse(json['created_at'] as String),
 );
 
 Map<String, dynamic> _$TodoToJson(_Todo instance) => <String, dynamic>{
@@ -56,4 +66,6 @@ Map<String, dynamic> _$TodoToJson(_Todo instance) => <String, dynamic>{
   'notes': instance.notes,
   if (instance.lastUpdated?.toIso8601String() case final value?)
     'last_updated': value,
+  if (instance.createdAt?.toIso8601String() case final value?)
+    'created_at': value,
 };

@@ -12,9 +12,16 @@ class ThemePanel extends ConsumerStatefulWidget {
   ConsumerState<ThemePanel> createState() => _ThemePanelState();
 }
 
-class _ThemePanelState extends ConsumerState<ThemePanel> {
+class _ThemePanelState extends ConsumerState<ThemePanel> with AutomaticKeepAliveClientMixin {
+
+  @override
+  bool get wantKeepAlive => true;
+
+
   @override
   Widget build(BuildContext context) {
+    // Required for automatic keep alive
+    super.build(context);
     var theme = ref.watch(themeProvider);
     return Container(
       decoration: createGradient(

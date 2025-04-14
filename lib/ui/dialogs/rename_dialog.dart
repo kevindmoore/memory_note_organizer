@@ -6,7 +6,7 @@ import 'package:memory_notes_organizer/providers.dart';
 
 typedef NewNameCallBack = void Function(String?);
 
-void showRenameDialog(WidgetRef ref, String title, NewNameCallBack callBack) {
+void showRenameDialog(Ref ref, String title, NewNameCallBack callBack) {
   final dialogState = ref.read(dialogStateProvider);
   if (!dialogState.renameDialogShowing) {
     dialogState.renameDialogShowing = true;
@@ -62,6 +62,7 @@ class _RenameDialogState extends ConsumerState<RenameDialog> {
           child: TextField(
             // decoration: const InputDecoration(border: InputBorder.none),
             keyboardType: TextInputType.text,
+            textCapitalization: TextCapitalization.sentences,
             autofocus: true,
             maxLines: 1,
             cursorColor: Colors.black,
@@ -76,12 +77,12 @@ class _RenameDialogState extends ConsumerState<RenameDialog> {
               onPressed: () {
                 cancel();
               },
-              child: const Text('Cancel')),
+              child: const Text('Cancel \u{2318}+C')),
           TextButton(
               onPressed: () {
                 oKAction();
               },
-              child: const Text('Rename')),
+              child: const Text('Rename \u{2318}+R')),
         ],
       ),
     );
@@ -98,6 +99,6 @@ class _RenameDialogState extends ConsumerState<RenameDialog> {
     final dialogState = ref.read(dialogStateProvider);
     dialogState.renameDialogShowing = false;
     Navigator.pop(context);
-    widget.callBack(textController.text);
+    widget.callBack(textController.text.trim());
   }
 }

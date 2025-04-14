@@ -15,6 +15,10 @@ _Category _$CategoryFromJson(Map<String, dynamic> json) => _Category(
       json['last_updated'] == null
           ? null
           : DateTime.parse(json['last_updated'] as String),
+  createdAt:
+      json['created_at'] == null
+          ? null
+          : DateTime.parse(json['created_at'] as String),
 );
 
 Map<String, dynamic> _$CategoryToJson(_Category instance) => <String, dynamic>{
@@ -24,4 +28,6 @@ Map<String, dynamic> _$CategoryToJson(_Category instance) => <String, dynamic>{
   if (instance.userId case final value?) 'user_id': value,
   if (instance.lastUpdated?.toIso8601String() case final value?)
     'last_updated': value,
+  if (instance.createdAt?.toIso8601String() case final value?)
+    'created_at': value,
 };

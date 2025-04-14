@@ -1,5 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lumberdash/lumberdash.dart';
 import 'package:memory_notes_organizer/constants.dart';
 import 'package:memory_notes_organizer/models/categories.dart';
 import 'package:memory_notes_organizer/models/current_todo_state.dart';
@@ -9,19 +11,30 @@ import 'package:memory_notes_organizer/models/todos.dart';
 import 'package:memory_notes_organizer/providers.dart';
 import 'package:memory_notes_organizer/router/app_routes.dart';
 import 'package:memory_notes_organizer/ui/dialogs/new_item.dart';
+import 'package:memory_notes_organizer/ui/dialogs/open_dialog.dart';
 import 'package:memory_notes_organizer/ui/dialogs/rename_dialog.dart';
 import 'package:memory_notes_organizer/ui/todos/tree/tree_viewmodel.dart';
 import 'package:utilities/utilities.dart';
 
+import '../dialogs/duplicate_dialog.dart';
+
 typedef OnSearchFound = void Function(int index, Node node);
 
 class TodoActions {
-  final WidgetRef ref;
+  final Ref ref;
   bool searching = false;
 
   TodoActions(this.ref);
 
-  void deleteTodo(Node rootNode, TreeController<Node> treeController) {
+  void deleteTodo({
+    required Node rootNode,
+    Node? currentMenuNode,
+    required TreeController<Node> treeController,
+  }) {
+    if (currentMenuNode != null) {
+      ref.read(currentlySelectedNodeProvider.notifier).setSelectedNode(currentMenuNode);
+      ref.read(currentTodoStateProvider.notifier).setCurrentStateFromNode(currentMenuNode);
+    }
     final context = ref.read(appRouterProvider).navigatorKey.currentContext;
     showAreYouSureDialog(context!, () async {
       CurrentTodoState currentTodoState = ref.read(currentTodoStateProvider);
@@ -43,7 +56,35 @@ class TodoActions {
     }, null);
   }
 
-  void newTodo(Node rootNode, TreeViewModel treeViewModel, TreeController<Node> treeController) {
+  void duplicateTodo({
+    required Node rootNode,
+    Node? currentMenuNode,
+    required TreeViewModel viewModel,
+    required TreeController<Node> treeController,
+  }) {
+    if (currentMenuNode != null) {
+      ref.read(currentlySelectedNodeProvider.notifier).setSelectedNode(currentMenuNode);
+      ref.read(currentTodoStateProvider.notifier).setCurrentStateFromNode(currentMenuNode);
+    }
+    showDuplicateDialog(ref, 'Duplicate Todo', (String? newName) async {
+      if (newName != null) {
+        await viewModel.duplicateCurrentTodo(newName);
+        treeController.rebuild();
+      }
+    });
+  }
+
+  void newTodo({
+    required Node rootNode,
+    Node? currentMenuNode,
+    required TreeViewModel treeViewModel,
+    required TreeController<Node> treeController,
+    required ScrollController scrollController,
+  }) {
+    if (currentMenuNode != null) {
+      ref.read(currentlySelectedNodeProvider.notifier).setSelectedNode(currentMenuNode);
+      ref.read(currentTodoStateProvider.notifier).setCurrentStateFromNode(currentMenuNode);
+    }
     showNewDialog(ref, newTodoString, (value) async {
       if (value != null) {
         CurrentTodoState currentTodoState = ref.read(currentTodoStateProvider);
@@ -56,20 +97,48 @@ class TodoActions {
           final updatedTodo = await todoRepository.addNewTodoToCategory(
             currentTodoState.currentTodoFile!.id!,
             currentTodoState.currentCategory!.id!,
-            Todo(name: value, parentTodoId: parentId),
+            Todo(name: value, parentTodoId: parentId, lastUpdated: DateTime.now()),
           );
           if (updatedTodo != null) {
             final categoryNode = rootNode.findCategoryNode(
               rootNode,
               currentTodoState.currentCategory!.id!,
             );
+            // Need to update the last updated date on the category and todo file
+            final category = todoRepository.findCategory(
+              currentTodoState.currentTodoFile!.id!,
+              currentTodoState.currentCategory!.id!,
+            );
+            if (category != null) {
+              await todoRepository.updateCategory(category.copyWith(lastUpdated: DateTime.now()));
+            }
+            final todoFile = todoRepository.findTodoFile(currentTodoState.currentTodoFile!.id!);
+            if (todoFile != null) {
+              await todoRepository.updateTodoFile(todoFile.copyWith(lastUpdated: DateTime.now()));
+            }
             if (parentId != null) {
               final parentNode = rootNode.findTodoNode(rootNode, parentId);
-              parentNode?.addChildNode(treeViewModel.createTodoNode(parentNode, updatedTodo));
-              treeController.rebuild();
+              if (parentNode != null) {
+                var todoNode = treeViewModel.createCategoryTodoNode(parentNode, updatedTodo);
+                parentNode.addChildNode(todoNode);
+                treeController.rebuild();
+                treeController.expand(parentNode);
+                ref.read(currentTodoStateProvider.notifier).selectNode(todoNode, -1);
+                final index = todoNode.findNodeIndex(rootNode, todoNode.id);
+                if (index != -1) {
+                  scrollToIndex(index, scrollController);
+                }
+              }
             } else if (categoryNode != null) {
-              categoryNode.addChildNode(treeViewModel.createTodoNode(categoryNode, updatedTodo));
+              var todoNode = treeViewModel.createCategoryTodoNode(categoryNode, updatedTodo);
+              categoryNode.addChildNode(todoNode);
+              treeController.expand(categoryNode);
               treeController.rebuild();
+              ref.read(currentTodoStateProvider.notifier).selectNode(todoNode, -1);
+              final index = todoNode.findNodeIndex(rootNode, todoNode.id);
+              if (index != -1) {
+                scrollToIndex(index, scrollController);
+              }
             }
           }
         }
@@ -121,25 +190,49 @@ class TodoActions {
     searching = false;
   }
 
-  void renameTodo(Node rootNode, TreeViewModel treeViewModel, TreeController<Node> treeController) {
-    showRenameDialog(ref, 'Rename Note', (String? newName) {
+  void renameTodo(
+    Node rootNode,
+    Node? currentMenuNode,
+    TreeViewModel treeViewModel,
+    TreeController<Node> treeController,
+  ) {
+    if (currentMenuNode != null) {
+      ref.read(currentlySelectedNodeProvider.notifier).setSelectedNode(currentMenuNode);
+      ref.read(currentTodoStateProvider.notifier).setCurrentStateFromNode(currentMenuNode);
+    }
+    showRenameDialog(ref, 'Rename Note', (String? newName) async {
       if (newName != null) {
-        treeViewModel.renameCurrentTodo(newName);
+        await treeViewModel.renameCurrentTodo(newName);
         treeController.rebuild();
       }
     });
   }
 
-  void renameCategory(Node rootNode, TreeViewModel viewModel, TreeController<Node> treeController) {
-    showRenameDialog(ref, 'Rename Category', (String? newName) {
+  void renameCategory(
+    Node rootNode,
+    Node? currentMenuNode,
+    TreeViewModel viewModel,
+    TreeController<Node> treeController,
+  ) {
+    if (currentMenuNode != null) {
+      ref.read(currentlySelectedNodeProvider.notifier).setSelectedNode(currentMenuNode);
+      ref.read(currentTodoStateProvider.notifier).setCurrentStateFromNode(currentMenuNode);
+    }
+    showRenameDialog(ref, 'Rename Category', (String? newName) async {
       if (newName != null) {
-        viewModel.renameCurrentCategory(newName);
+        await viewModel.renameCurrentCategory(newName);
         treeController.rebuild();
       }
     });
   }
 
-  void deleteCategory(Node rootNode, TreeViewModel viewModel, TreeController<Node> treeController) {
+  void deleteCategory(Node rootNode,
+      Node? currentMenuNode,
+      TreeViewModel viewModel, TreeController<Node> treeController) {
+    if (currentMenuNode != null) {
+      ref.read(currentlySelectedNodeProvider.notifier).setSelectedNode(currentMenuNode);
+      ref.read(currentTodoStateProvider.notifier).setCurrentStateFromNode(currentMenuNode);
+    }
     final context = ref.read(appRouterProvider).navigatorKey.currentContext;
     showAreYouSureDialog(context!, () async {
       CurrentTodoState currentTodoState = ref.read(currentTodoStateProvider);
@@ -148,47 +241,167 @@ class TodoActions {
           rootNode,
           currentTodoState.currentTodoFile!.id!,
         );
-        if (todoFileNode != null) {
+        if (todoFileNode != null && currentTodoState.currentCategory!.id != null) {
           todoFileNode.removeNode(rootNode, currentTodoState.currentCategory!.id!);
           treeController.rebuild();
+        } else {
+          logError('deleteCategory: Current Category id is null or todoFileNode is null');
         }
         var todoRepository = ref.read(todoRepositoryProvider);
         await todoRepository.deleteCategory(currentTodoState.currentCategory!, true);
+      } else {
+        logError('deleteCategory: Current Category is null');
       }
     }, null);
   }
 
   void duplicateCategory(
     Node rootNode,
+    Node? currentMenuNode,
     TreeViewModel viewModel,
     TreeController<Node> treeController,
-  ) {}
+  ) {
+    if (currentMenuNode != null) {
+      ref.read(currentlySelectedNodeProvider.notifier).setSelectedNode(currentMenuNode);
+      ref.read(currentTodoStateProvider.notifier).setCurrentStateFromNode(currentMenuNode);
+    }
+    showDuplicateDialog(ref, 'Duplicate Category', (String? newName) async {
+      if (newName != null) {
+        await viewModel.duplicateCurrentCategory(newName);
+        treeController.rebuild();
+      }
+    });
+  }
 
-  void renameFile(Node rootNode, TreeViewModel viewModel, TreeController<Node> treeController) {}
+  void renameFile(
+    Node rootNode,
+    Node? currentMenuNode,
+    TreeViewModel viewModel,
+    TreeController<Node> treeController,
+  ) {
+    if (currentMenuNode != null) {
+      ref.read(currentlySelectedNodeProvider.notifier).setSelectedNode(currentMenuNode);
+      ref.read(currentTodoStateProvider.notifier).setCurrentStateFromNode(currentMenuNode);
+    }
+    showRenameDialog(ref, 'Rename File', (String? newName) async {
+      if (newName != null) {
+        await viewModel.renameCurrentFile(newName);
+        treeController.rebuild();
+      }
+    });
+  }
 
-  void deleteFile(Node rootNode, TreeViewModel viewModel, TreeController<Node> treeController) {}
+  void deleteFile(
+    Node rootNode,
+    Node? currentMenuNode,
+    TreeViewModel viewModel,
+    TreeController<Node> treeController,
+  ) {
+    if (currentMenuNode != null) {
+      ref.read(currentlySelectedNodeProvider.notifier).setSelectedNode(currentMenuNode);
+      ref.read(currentTodoStateProvider.notifier).setCurrentStateFromNode(currentMenuNode);
+    }
+    final context = ref.read(appRouterProvider).navigatorKey.currentContext;
+    showAreYouSureDialog(context!, () async {
+      CurrentTodoState currentTodoState = ref.read(currentTodoStateProvider);
+      if (currentTodoState.currentTodoFile != null) {
+        final todoFileNode = rootNode.findTodoFileNode(
+          rootNode,
+          currentTodoState.currentTodoFile!.id!,
+        );
+        if (todoFileNode != null) {
+          todoFileNode.removeNode(rootNode, currentTodoState.currentTodoFile!.id!);
+          treeController.rebuild();
+        }
+        var todoRepository = ref.read(todoRepositoryProvider);
+        await todoRepository.deleteTodoFile(currentTodoState.currentTodoFile!);
+      }
+    }, null);
+  }
 
-  void duplicateFile(Node rootNode, TreeViewModel viewModel, TreeController<Node> treeController) {}
+  void duplicateFile(
+    Node rootNode,
+    Node? currentMenuNode,
+    TreeViewModel viewModel,
+    TreeController<Node> treeController,
+  ) {
+    if (currentMenuNode != null) {
+      ref.read(currentlySelectedNodeProvider.notifier).setSelectedNode(currentMenuNode);
+      ref.read(currentTodoStateProvider.notifier).setCurrentStateFromNode(currentMenuNode);
+    }
+    showDuplicateDialog(ref, 'Duplicate File', (String? newName) async {
+      if (newName != null) {
+        await viewModel.duplicateCurrentTodoFile(newName);
+        treeController.rebuild();
+      }
+    });
+  }
 
-  void closeFile(Node rootNode, TreeViewModel viewModel, TreeController<Node> treeController) {}
-
-  void reloadFile(Node rootNode, TreeViewModel viewModel, TreeController<Node> treeController) {
+  /// Close the current file
+  void closeFile(
+    Node rootNode,
+    Node? currentMenuNode,
+    TreeViewModel viewModel,
+    TreeController<Node> treeController,
+  ) {
+    if (currentMenuNode != null) {
+      ref.read(currentlySelectedNodeProvider.notifier).setSelectedNode(currentMenuNode);
+      ref.read(currentTodoStateProvider.notifier).setCurrentStateFromNode(currentMenuNode);
+    }
     var todoRepository = ref.read(todoRepositoryProvider);
     CurrentTodoState currentTodoState = ref.read(currentTodoStateProvider);
     if (currentTodoState.currentTodoFile != null) {
-      todoRepository.reloadTodoFile(currentTodoState.currentTodoFile!.id!);
-      viewModel.rebuildFileNode(currentTodoState.currentTodoFile!);
+      TodoFile? todoFile = todoRepository.findTodoFile(currentTodoState.currentTodoFile!.id!);
+      if (todoFile != null) {
+        todoRepository.closeFile(todoFile);
+        Node? selectedNode = ref.read(currentlySelectedNodeProvider.notifier).getSelectedNode();
+        if (selectedNode != null) {
+          rootNode.removeNode(rootNode, selectedNode.id!);
+          treeController.rebuild();
+        }
+      }
     }
   }
 
-  void reload() {
+  /// Reload the current file
+  Future reloadFile(
+    Node rootNode,
+    Node? currentMenuNode,
+    TreeViewModel viewModel,
+    TreeController<Node> treeController,
+  ) async {
+    if (currentMenuNode != null) {
+      ref.read(currentlySelectedNodeProvider.notifier).setSelectedNode(currentMenuNode);
+      ref.read(currentTodoStateProvider.notifier).setCurrentStateFromNode(currentMenuNode);
+    }
     var todoRepository = ref.read(todoRepositoryProvider);
-    todoRepository.reload();
-    ref.read(currentTodoStateProvider.notifier).reset();
-    ref.read(currentFilesProvider.notifier).reset();
+    CurrentTodoState currentTodoState = ref.read(currentTodoStateProvider);
+    if (currentTodoState.currentTodoFile != null) {
+      await todoRepository.reloadTodoFile(currentTodoState.currentTodoFile!.id!);
+      viewModel.rebuildFileNode(currentTodoState.currentTodoFile!);
+      treeController.rebuild();
+    }
   }
 
-  void newCategory(Node rootNode, TreeViewModel viewModel, TreeController<Node> treeController) {
+  /// Reload the all files
+  Future reload() async {
+    ref.read(currentTodoStateProvider.notifier).reset();
+    ref.read(currentFilesProvider.notifier).reset();
+    var todoRepository = ref.read(todoRepositoryProvider);
+    await todoRepository.reload();
+  }
+
+  /// Create a new Category
+  Future<void> newCategory({
+    required Node rootNode,
+    Node? currentMenuNode,
+    required TreeViewModel viewModel,
+    required TreeController<Node> treeController,
+  }) async {
+    if (currentMenuNode != null) {
+      ref.read(currentlySelectedNodeProvider.notifier).setSelectedNode(currentMenuNode);
+      ref.read(currentTodoStateProvider.notifier).setCurrentStateFromNode(currentMenuNode);
+    }
     showNewDialog(ref, newCategoryString, (value) async {
       if (value != null) {
         CurrentTodoState currentTodoState = ref.read(currentTodoStateProvider);
@@ -198,6 +411,13 @@ class TodoActions {
             currentTodoState.currentTodoFile!.id!,
             Category(name: value),
           );
+          // Need to update the last updated date on the todo file
+          TodoFile? todoFile = todoRepository.findTodoFile(currentTodoState.currentTodoFile!.id!);
+          if (todoFile != null) {
+            todoFile = await todoRepository.updateTodoFile(
+              todoFile.copyWith(lastUpdated: DateTime.now()),
+            );
+          }
           if (newCategory != null) {
             final todoFileNode = rootNode.findTodoFileNode(
               rootNode,
@@ -206,9 +426,11 @@ class TodoActions {
             if (todoFileNode != null) {
               var findTodoFile = todoRepository.findTodoFile(currentTodoState.currentTodoFile!.id!);
               if (findTodoFile != null) {
+                findTodoFile = todoRepository.addCategoryToTodoFile(findTodoFile, newCategory);
                 todoFileNode.addChildNode(
                   viewModel.createCategoryNode(todoFileNode, findTodoFile, newCategory),
                 );
+                treeController.expand(todoFileNode);
               }
               treeController.rebuild();
             }
@@ -218,20 +440,71 @@ class TodoActions {
     });
   }
 
-  void newFile(Node rootNode, TreeViewModel viewModel, TreeController<Node> treeController) {}
+  /// Create a new File
+  void newFile(Node rootNode, TreeViewModel viewModel, TreeController<Node> treeController) {
+    showNewDialog(ref, newListString, (value) async {
+      if (value != null) {
+        var todoRepository = ref.read(todoRepositoryProvider);
+        var todoFile = TodoFile(name: value);
+        todoFile = await todoRepository.addNewTodoFile(todoFile);
+        var todoFileNode = viewModel.createTodoFileNode(todoFile);
+        rootNode.addChildNode(todoFileNode);
+        treeController.expand(todoFileNode);
+        treeController.rebuild();
+      }
+    });
+  }
 
   void showLogs() {}
 
+  /// Logout the user
   void logout() {
     var todoRepository = ref.read(todoRepositoryProvider);
-    getSupaAuthManager(ref).logout();
+    getProviderSupaAuthManager(ref).logout();
     todoRepository.clear();
-    ref.read(appRouterProvider).popAndPush(LoginRoute(onResult: (result) => {}));
+    ref.read(appRouterProvider).popAndPush(LoginRoute(onResult: (result) {
+      if (result) {
+        ref.read(appRouterProvider).replace(MainScreenRoute());
+      }
+    }));
   }
 
+  /// Read a file from disk
   void loadFile(Node rootNode, TreeViewModel viewModel, TreeController<Node> treeController) {}
 
-  void openFile(Node rootNode, TreeViewModel viewModel, TreeController<Node> treeController) {}
+  /// Show a dialog to load a file
+  void openFile(Node rootNode, TreeViewModel viewModel, TreeController<Node> treeController) {
+    showOpen(ref, (TodoFile? todoFile) async {
+      if (todoFile != null) {
+        var todoRepository = ref.read(todoRepositoryProvider);
+        todoFile = await todoRepository.addNewTodoFile(todoFile);
+        var todoFileNode = viewModel.createTodoFileNode(todoFile);
+        rootNode.addChildNode(todoFileNode);
+        treeController.expand(todoFileNode);
+        treeController.rebuild();
+      }
+    });
+  }
 
-  void closeAllFiles(Node rootNode, TreeViewModel viewModel, TreeController<Node> treeController) {}
+  /// Close all files
+  void closeAllFiles(Node rootNode, TreeViewModel viewModel, TreeController<Node> treeController) {
+    final context = ref.read(appRouterProvider).navigatorKey.currentContext;
+    showAreYouSureDialog(context!, () async {
+      var todoRepository = ref.read(todoRepositoryProvider);
+      todoRepository.closeAllFiles();
+      ref.read(currentTodoStateProvider.notifier).reset();
+      ref.read(currentlySelectedNodeProvider.notifier).setSelectedNode(null);
+    }, null);
+  }
+
+  void scrollToIndex(int index, ScrollController scrollController) {
+    final scrollOffset = index * 40.0;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      scrollController.animateTo(
+        scrollOffset,
+        duration: Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
 }

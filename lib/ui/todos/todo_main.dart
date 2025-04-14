@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:multi_split_view/multi_split_view.dart';
-import 'package:responsive_framework/responsive_framework.dart';
 import 'package:memory_notes_organizer/ui/todos/tree/tree_widget.dart';
 import 'package:memory_notes_organizer/ui/widgets/notes_panel.dart';
+import 'package:utilities/utilities.dart';
 
 class TodoMain extends ConsumerStatefulWidget {
   const TodoMain({super.key});
@@ -12,13 +12,14 @@ class TodoMain extends ConsumerStatefulWidget {
   ConsumerState<TodoMain> createState() => _TodoMainState();
 }
 
-class _TodoMainState extends ConsumerState<TodoMain> {
+class _TodoMainState extends ConsumerState<TodoMain> with AutomaticKeepAliveClientMixin {
   final MultiSplitViewController _controller = MultiSplitViewController();
   final PageController _pageController = PageController();
-  final pageViewWidgets = [
-    TreeWidget(),
-    NotesPanel(),
-  ];
+  final pageViewWidgets = [TreeWidget(key: UniqueKey()), NotesPanel(key: UniqueKey())];
+  final notesPanel = NotesPanel(key: UniqueKey());
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -42,40 +43,34 @@ class _TodoMainState extends ConsumerState<TodoMain> {
 
   @override
   Widget build(BuildContext context) {
-    return ResponsiveBreakpoints.builder(
-      breakpoints: [
-        const Breakpoint(start: 0, end: 450, name: MOBILE),
-        const Breakpoint(start: 451, end: 800, name: TABLET),
-        const Breakpoint(start: 801, end: 1920, name: DESKTOP),
-        const Breakpoint(start: 1921, end: double.infinity, name: '4K'),
-      ],
-      child: Builder(
-        builder: (context) {
-          return buildContent(context);
-        }
-      )
-    );
-  }
-
-  Widget buildContent(BuildContext context) {
-    if (ResponsiveBreakpoints.of(context).isDesktop || ResponsiveBreakpoints.of(context).isTablet) {
+    // Required for automatic keep alive
+    super.build(context);
+    if (isDesktop() || isWeb()) {
       return _buildDesktop();
     } else {
-      return _buildMobile();
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth >= 600) {
+            return _buildDesktop();
+          } else {
+            return _buildMobile();
+          }
+        },
+      );
     }
   }
 
   Widget _buildDesktop() {
-    return  MultiSplitView(
+    return MultiSplitView(
       controller: _controller,
       dividerBuilder: (
-          Axis axis,
-          int index,
-          bool resizable,
-          bool dragging,
-          bool highlighted,
-          MultiSplitViewThemeData themeData,
-          ) {
+        Axis axis,
+        int index,
+        bool resizable,
+        bool dragging,
+        bool highlighted,
+        MultiSplitViewThemeData themeData,
+      ) {
         return DividerWidget(
           axis: Axis.vertical,
           index: index,
@@ -95,18 +90,15 @@ class _TodoMainState extends ConsumerState<TodoMain> {
       },
       builder: (context, area) {
         if (area.data == 1) {
-          return TreeWidget();
+          return pageViewWidgets[0];
         } else {
-          return const NotesPanel();
+          return notesPanel;
         }
       },
     );
   }
 
   Widget _buildMobile() {
-    return PageView(
-        controller: _pageController,
-        children: pageViewWidgets,
-       );
+    return PageView(controller: _pageController, children: pageViewWidgets);
   }
 }

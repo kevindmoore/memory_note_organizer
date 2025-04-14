@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:memory_notes_organizer/models/node.dart';
 import 'package:menubar/menubar.dart';
 import 'package:memory_notes_organizer/events/menu_events.dart';
 import 'package:memory_notes_organizer/providers.dart';
@@ -40,7 +41,7 @@ class MenuManager extends StateNotifier<MenuState> {
 
   PlatformMenu createNotesMenu() {
     return PlatformMenu(
-      label: 'Note Master',
+      label: 'Memory Note Organizer',
       menus: [
         PlatformMenuItem(
           label: 'Quit',
@@ -238,51 +239,54 @@ class MenuManager extends StateNotifier<MenuState> {
   }
 
   void handleOpen() async {
-    ref.read(menuBus).fire(OpenFileEvent());
+    ref.read(eventBusProvider).fire(OpenFileEvent());
   }
 
   void handleClose() async {
-    ref.read(menuBus).fire(CloseCurrentFileEvent());
+    ref.read(eventBusProvider).fire(CloseCurrentFileEvent());
   }
 
   void handleCloseAll() async {
-    ref.read(menuBus).fire(CloseAllFileEvent());
+    ref.read(eventBusProvider).fire(CloseAllFileEvent());
   }
 
   void deleteTodo() {
-    ref.read(menuBus).fire(DeleteTodoEvent());
+    ref.read(eventBusProvider).fire(DeleteTodoEvent());
   }
 
   void deleteCategory() {
-    ref.read(menuBus).fire(DeleteCategoryEvent());
+    ref.read(eventBusProvider).fire(DeleteCategoryEvent());
   }
 
   void deleteFile() {
-    ref.read(menuBus).fire(DeleteFileEvent());
+    Node? node = ref.read(currentlySelectedNodeProvider);
+    if (node != null) {
+      ref.read(eventBusProvider).fire(DeleteFileEvent(node: node));
+    }
   }
 
   void renameTodo() {
-    ref.read(menuBus).fire(RenameTodoEvent());
+    ref.read(eventBusProvider).fire(RenameTodoEvent());
   }
 
   void renameCategory() {
-    ref.read(menuBus).fire(RenameCategoryEvent());
+    ref.read(eventBusProvider).fire(RenameCategoryEvent());
   }
 
   void renameFile() {
-    ref.read(menuBus).fire(RenameFileEvent());
+    ref.read(eventBusProvider).fire(RenameFileEvent());
   }
 
   void newCategory() {
-    ref.read(menuBus).fire(NewCategoryEvent());
+    ref.read(eventBusProvider).fire(NewCategoryEvent());
   }
 
   void newTodo() {
-    ref.read(menuBus).fire(NewTodoEvent());
+    ref.read(eventBusProvider).fire(NewTodoEvent());
   }
 
   void newFile() {
-    ref.read(menuBus).fire(NewFileEvent());
+    ref.read(eventBusProvider).fire(NewFileEvent());
   }
 
   PlatformMenu createFindMenu() {
@@ -304,7 +308,7 @@ class MenuManager extends StateNotifier<MenuState> {
   }
 
   void handleSearch() {
-    ref.read(menuBus).fire(ShowSearchEvent());
+    ref.read(eventBusProvider).fire(ShowSearchEvent());
   }
 
   PlatformMenu createHelpMenu() {
@@ -322,11 +326,11 @@ class MenuManager extends StateNotifier<MenuState> {
   }
 
   void handleLogs() {
-    ref.read(menuBus).fire(LogsEvent());
+    ref.read(eventBusProvider).fire(LogsEvent());
   }
 
   void handleLogout() {
-    ref.read(menuBus).fire(LogoutEvent());
+    ref.read(eventBusProvider).fire(LogoutEvent());
   }
 
   /*
@@ -356,10 +360,10 @@ class MenuManager extends StateNotifier<MenuState> {
   }
 
   void handleReload() {
-    ref.read(menuBus).fire(ReloadEvent());
+    ref.read(eventBusProvider).fire(ReloadEvent());
   }
 
   void handleQuit() {
-    ref.read(menuBus).fire(QuitEvent());
+    ref.read(eventBusProvider).fire(QuitEvent());
   }
 }

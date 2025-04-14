@@ -1,6 +1,7 @@
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:memory_notes_organizer/ui/todos/todo_actions.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supa_manager/supa_manager.dart';
 import 'package:memory_notes_organizer/logs/log_container.dart';
@@ -23,6 +24,9 @@ part 'providers.g.dart';
 final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
 @Riverpod(keepAlive: true)
+TodoActions todoActions(Ref ref) => TodoActions(ref);
+
+@Riverpod(keepAlive: true)
 AppRouter appRouter(Ref ref) => AppRouter(ref);
 
 @Riverpod(keepAlive: true)
@@ -31,34 +35,33 @@ MainScreenViewModel mainScreenViewModel(Ref ref) => MainScreenViewModel(ref);
 @Riverpod(keepAlive: true)
 TreeViewModel treeViewModel(Ref ref) => TreeViewModel(ref);
 
-final menuManagerProvider = Provider<MenuManager>((ref) {
-  final manager = MenuManager(ref);
-  return manager;
-});
+@Riverpod(keepAlive: true)
+MenuManager menuManager(Ref ref) => MenuManager(ref);
 
+@Riverpod(keepAlive: true)
+LogContainer logContainer(Ref ref) => LogContainer();
 
-final logProvider = Provider<LogContainer>((ref) {
-  return LogContainer();
-});
+@Riverpod(keepAlive: true)
+EventBus searchBus(Ref ref) => EventBus();
 
-final searchBus = Provider<EventBus>((ref) { return EventBus(); });
-final menuBus = Provider<EventBus>((ref) { return EventBus(); });
+@Riverpod(keepAlive: true)
+EventBus eventBus(Ref ref) => EventBus();
 
 late Configuration configuration;
 final configurationProvider = Provider<Configuration>((ref) {
   return configuration;
 });
 
-final configurationLoginStateProvider =
-Provider.family<LoginStateNotifier, Configuration>((ref, configuration) {
+final configurationLoginStateProvider = Provider.family<LoginStateNotifier, Configuration>((
+  ref,
+  configuration,
+) {
   return configuration.loginStateNotifier;
 });
-
 
 final themeProvider = StateNotifierProvider<ThemeManager, ThemeColors>((ref) {
   return ThemeManager(globalSharedPreferences);
 });
-
 
 final logInStateProvider = ChangeNotifierProvider<LoginStateNotifier>((ref) {
   return ref.read(configurationProvider).loginStateNotifier;
@@ -68,8 +71,10 @@ final searchTextStateProvider = StateProvider<String>((ref) {
   return '';
 });
 
-final supaBaseDatabaseProvider =
-Provider.family<SupaDatabaseManager, Configuration>((ref, configuration) {
+final supaBaseDatabaseProvider = Provider.family<SupaDatabaseManager, Configuration>((
+  ref,
+  configuration,
+) {
   return configuration.supaDatabaseRepository;
 });
 
@@ -89,14 +94,12 @@ SupaAuthManager getProviderSupaAuthManager(Ref ref) {
   return ref.read(configurationProvider).supaAuthManager;
 }
 
-SupaAuthManager getChangeProviderSupaAuthManager(
-    Ref ref) {
+SupaAuthManager getChangeProviderSupaAuthManager(Ref ref) {
   return ref.read(configurationProvider).supaAuthManager;
 }
 
-final dialogStateProvider = Provider<DialogState>((ref) {
-  return DialogState();
-});
+@Riverpod(keepAlive: true)
+DialogState dialogState(Ref ref) => DialogState();
 
 class NavigationIndex extends Notifier<int> {
   @override
@@ -119,21 +122,23 @@ final todoManagerProvider = ChangeNotifierProvider<TodoManager>((ref) {
   return TodoManager(ref);
 });
 
-
 final todoRepositoryProvider = ChangeNotifierProvider<TodoRepository>((ref) {
   final todoManager = ref.read(todoManagerProvider);
   // final localDatabase = ref.read(localDatabaseProvider);
   final databaseRepository = getSupaDatabaseManager(ref);
-  return TodoRepository(ref: ref, todoManager: todoManager,
-      // localRepo: localDatabase,
-      databaseRepository: databaseRepository);
+  return TodoRepository(
+    ref: ref,
+    todoManager: todoManager,
+    // localRepo: localDatabase,
+    databaseRepository: databaseRepository,
+  );
 });
 
-
-final currentTodoStateProvider = StateNotifierProvider<CurrentTodoStateProvider, CurrentTodoState>((ref) {
+final currentTodoStateProvider = StateNotifierProvider<CurrentTodoStateProvider, CurrentTodoState>((
+  ref,
+) {
   return CurrentTodoStateProvider(ref, CurrentTodoState());
 });
-
 
 class CurrentFilesNotifier extends Notifier<List<TodoFile>> {
   @override
@@ -141,13 +146,14 @@ class CurrentFilesNotifier extends Notifier<List<TodoFile>> {
     return [];
   }
 
-  void setTodoFiles(List<TodoFile> index) {
-    state = index;
+  void setTodoFiles(List<TodoFile> todoFiles) {
+    state = todoFiles;
   }
 
   void reset() {
     state = [];
   }
+
   List<TodoFile> getTodoFiles() => state;
 }
 
@@ -160,7 +166,6 @@ class CurrentlySelectedNodeNotifier extends Notifier<Node?> {
   Node? build() {
     return null;
   }
-
 
   void setSelectedNode(Node? node) {
     state = node;
@@ -175,11 +180,18 @@ final currentlySelectedNodeProvider = NotifierProvider<CurrentlySelectedNodeNoti
 
 extension ProviderExtensions on ConsumerState {
   List<TodoFile> getFiles() => ref.read(currentFilesProvider);
+
   Node? getSelectedNode() => ref.read(currentlySelectedNodeProvider);
+
   CurrentTodoState getCurrentTodoState() => ref.read(currentTodoStateProvider);
+
   CurrentTodoStateProvider getTodoStateProvider() => ref.read(currentTodoStateProvider.notifier);
-  EventBus getSearchBus() => ref.read(searchBus);
-  EventBus getMenuBus() => ref.read(menuBus);
+
+  EventBus getSearchBus() => ref.read(searchBusProvider);
+
+  EventBus getMenuBus() => ref.read(eventBusProvider);
+
   TodoRepository getTodoRepository() => ref.read(todoRepositoryProvider);
+
   LoginStateNotifier getLoginNotifier() => ref.read(configurationProvider).loginStateNotifier;
 }

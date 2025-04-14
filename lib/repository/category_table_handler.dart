@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lumberdash/lumberdash.dart';
+import 'package:memory_notes_organizer/repository/todo_repository.dart';
 import 'package:supa_manager/supa_manager.dart';
 
 import '../models/models.dart';
@@ -33,7 +34,7 @@ class CategoryTableHandler {
     return null;
   }
 
-  Future<List<Category>> getCategoriesWithFileId(int todoFileId) async {
+  Future<List<Category>> getCategoriesAndTodosWithFileId(int todoFileId) async {
     final result = await databaseRepository.readEntriesWhere(
         categoryTableData, todoFileIdName, todoFileId);
     switch (result) {
@@ -42,8 +43,12 @@ class CategoryTableHandler {
         await Future.forEach(data, (Category category) async {
           final todos = await todoTableHandler.getTodosWithFileAndCategory(
               todoFileId, category.id!);
+          var reorderedTodos = reorderTodos(todos);
+          sortTodos(reorderedTodos);
           category = category.copyWith(
-              todos: reorderTodos(todos), lastUpdated: DateTime.now());
+              todos: reorderedTodos);
+          // category = category.copyWith(
+          //     todos: reorderTodos(todos), lastUpdated: DateTime.now());
           categories.add(category);
         });
         return categories;
@@ -138,13 +143,17 @@ class CategoryTableHandler {
         childrenOfChildrenTodos
             .sort((todo1, todo2) => todo1.order.compareTo(todo2.order));
         childTodo = childTodo.copyWith(
-            children: childrenOfChildrenTodos, lastUpdated: DateTime.now());
+            children: childrenOfChildrenTodos);
+        // childTodo = childTodo.copyWith(
+        //     children: childrenOfChildrenTodos, lastUpdated: DateTime.now());
         _findChildTodos(allCategoryTodos, childTodo, childrenOfChildrenTodos);
       }
       parentChildTodos.add(childTodo);
     }
     parentTodo = parentTodo.copyWith(
-        children: parentChildTodos, lastUpdated: DateTime.now());
+        children: parentChildTodos);
+    // parentTodo = parentTodo.copyWith(
+    //     children: parentChildTodos, lastUpdated: DateTime.now());
     return parentTodo;
   }
 

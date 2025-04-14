@@ -1,10 +1,15 @@
 import 'dart:io';
 
+import 'package:memory_notes_organizer/models/node.dart';
 import 'package:memory_notes_organizer/models/todos.dart';
 
 sealed class Event {}
 
-class CloseCurrentFileEvent implements Event {}
+class CloseCurrentFileEvent implements Event {
+  Node? node;
+  CloseCurrentFileEvent({this.node});
+
+}
 class CloseAllFileEvent implements Event {}
 class OpenFileEvent implements Event {}
 class LoadFileEvent implements Event {
@@ -16,60 +21,73 @@ class LoadFileEvent implements Event {
 class LogoutEvent implements Event {}
 class LogsEvent implements Event {}
 class NewFileEvent implements Event {}
-class NewCategoryEvent implements Event {}
-class NewTodoEvent implements Event {}
-class DeleteTodoEvent implements Event {
-  final int? todoId;
+class NewCategoryEvent implements Event {
+  Node? node;
+  NewCategoryEvent({this.node});
+}
 
-  DeleteTodoEvent([this.todoId]);
+class NewTodoEvent implements Event {
+  Node? node;
+
+  NewTodoEvent({this.node});
+}
+class DeleteTodoEvent implements Event {
+  Node? node;
+
+  DeleteTodoEvent({this.node});
 
 }
 class RenameTodoEvent implements Event {
-  final int? todoId;
+  Node? node;
 
-  RenameTodoEvent([this.todoId]);
+  RenameTodoEvent({this.node});
 
 }
 class ReloadEvent implements Event {}
 class ReloadFileEvent implements Event {
-  final int? fileId;
+  Node? node;
 
-  ReloadFileEvent([this.fileId]);
+  ReloadFileEvent({this.node});
 }
 class CloseFileEvent implements Event {
-  final int? fileId;
+  Node? node;
 
-  CloseFileEvent([this.fileId]);
+  CloseFileEvent({this.node});
 }
 class DuplicateFileEvent implements Event {
-  final int? fileId;
+  Node? node;
 
-  DuplicateFileEvent([this.fileId]);
+  DuplicateFileEvent({this.node});
 }
 class DeleteFileEvent implements Event {
-  final int? fileId;
+  Node? node;
 
-  DeleteFileEvent([this.fileId]);
+  DeleteFileEvent({this.node});
 }
 class RenameFileEvent implements Event {
-  final int? fileId;
+  Node? node;
 
-  RenameFileEvent([this.fileId]);
+  RenameFileEvent({this.node});
 }
 class DuplicateCategoryEvent implements Event {
-  final int? categoryId;
+  Node? node;
 
-  DuplicateCategoryEvent([this.categoryId]);
+  DuplicateCategoryEvent({this.node});
+}
+class DuplicateTodoEvent implements Event {
+  Node? node;
+
+  DuplicateTodoEvent({this.node});
 }
 class DeleteCategoryEvent implements Event {
-  final int? categoryId;
+  Node? node;
 
-  DeleteCategoryEvent([this.categoryId]);
+  DeleteCategoryEvent({this.node});
 }
 class RenameCategoryEvent implements Event {
-  final int? categoryId;
+  Node? node;
 
-  RenameCategoryEvent([this.categoryId]);
+  RenameCategoryEvent({this.node});
 }
 class QuitEvent implements Event {}
 class ShowSearchEvent implements Event {}

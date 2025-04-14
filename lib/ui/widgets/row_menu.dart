@@ -37,7 +37,7 @@ class _RowMenuState extends ConsumerState<RowMenu> {
           text: 'Reload',
           icon: Icons.refresh,
           onTap: () {
-            getMenuBus().fire(ReloadFileEvent(widget.childNode.id!));
+            getMenuBus().fire(ReloadFileEvent(node: widget.childNode));
           },
         ),
       );
@@ -46,28 +46,43 @@ class _RowMenuState extends ConsumerState<RowMenu> {
           text: 'New Category',
           icon: Icons.add,
           onTap: () {
-            getMenuBus().fire(NewCategoryEvent());
+            getMenuBus().fire(NewCategoryEvent(node: widget.childNode));
           },
         ),
       );
     } else if (widget.childNode.type == NodeType.category) {
-
+      menuItems.add(
+        buildMenuRow(
+          text: 'New Todo',
+          icon: Icons.add,
+          onTap: () {
+            getMenuBus().fire(NewTodoEvent(node: widget.childNode));
+          },
+        ),
+      );
+    } else if (widget.childNode.type == NodeType.todo) {
+      menuItems.add(
+        buildMenuRow(
+          text: 'New Todo',
+          icon: Icons.add,
+          onTap: () {
+            getMenuBus().fire(NewTodoEvent(node: widget.childNode));
+          },
+        ),
+      );
     }
-    menuItems.add(
-      buildMenuRow(
-        text: 'New Todo',
-        icon: Icons.add,
-        onTap: () {
-          getMenuBus().fire(NewTodoEvent());
-        },
-      ),
-    );
     menuItems.add(
       buildMenuRow(
         text: 'Duplicate',
         icon: Icons.copy,
         onTap: () {
-          getMenuBus().fire(DuplicateFileEvent(widget.childNode.id!));
+          if (widget.childNode.type == NodeType.file) {
+            getMenuBus().fire(DuplicateFileEvent(node: widget.childNode));
+          } else if (widget.childNode.type == NodeType.category) {
+            getMenuBus().fire(DuplicateCategoryEvent(node: widget.childNode));
+          } else if (widget.childNode.type == NodeType.todo) {
+            getMenuBus().fire(DuplicateTodoEvent(node: widget.childNode));
+          }
         },
       ),
     );
@@ -77,11 +92,11 @@ class _RowMenuState extends ConsumerState<RowMenu> {
         icon: Icons.delete,
         onTap: () {
           if (widget.childNode.type == NodeType.file) {
-            getMenuBus().fire(DeleteFileEvent(widget.childNode.id!));
+            getMenuBus().fire(DeleteFileEvent(node: widget.childNode));
           } else if (widget.childNode.type == NodeType.category) {
-            getMenuBus().fire(DeleteCategoryEvent(widget.childNode.id!));
+            getMenuBus().fire(DeleteCategoryEvent(node: widget.childNode));
           } else if (widget.childNode.type == NodeType.todo) {
-            getMenuBus().fire(DeleteTodoEvent(widget.childNode.id!));
+            getMenuBus().fire(DeleteTodoEvent(node: widget.childNode));
           }
         },
       ),
@@ -93,13 +108,13 @@ class _RowMenuState extends ConsumerState<RowMenu> {
         onTap: () {
           switch (widget.childNode.type) {
             case NodeType.file:
-              getMenuBus().fire(RenameFileEvent(widget.childNode.id!));
+              getMenuBus().fire(RenameFileEvent(node: widget.childNode));
               break;
             case NodeType.category:
-              getMenuBus().fire(RenameCategoryEvent(widget.childNode.id!));
+              getMenuBus().fire(RenameCategoryEvent(node: widget.childNode));
               break;
             case NodeType.todo:
-              getMenuBus().fire(RenameTodoEvent(widget.childNode.id!));
+              getMenuBus().fire(RenameTodoEvent(node: widget.childNode));
               break;
             case NodeType.root:
               break;

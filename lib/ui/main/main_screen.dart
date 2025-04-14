@@ -1,9 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:memory_notes_organizer/events/menu_events.dart';
 import 'package:memory_notes_organizer/providers.dart';
+import 'package:memory_notes_organizer/ui/logout/logout_page.dart';
 import 'package:memory_notes_organizer/ui/search/search_panel.dart';
 import 'package:memory_notes_organizer/ui/theme/theme_panel.dart';
 import 'package:memory_notes_organizer/ui/todos/todo_main.dart';
@@ -22,11 +24,13 @@ class MainScreen extends ConsumerStatefulWidget {
 class _MainScreenState extends ConsumerState<MainScreen> {
   int _currentIndex = 0;
   late MainScreenViewModel viewModel;
+  final _fabKey = GlobalKey<ExpandableFabState>();
+
   final List<Widget> _pages = [
-    const TodoMain(),
-    const SearchPanel(),
-    const ThemePanel(),
-    const Center(child: Text('Logout')),
+    TodoMain(key: UniqueKey()),
+    SearchPanel(key: UniqueKey()),
+    ThemePanel(key: UniqueKey()),
+    LogoutPage(key: UniqueKey()),
   ];
 
 
@@ -40,11 +44,56 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   Widget build(BuildContext context) {
     var theme = ref.watch(themeProvider);
     viewModel = ref.read(mainScreenViewModelProvider);
+    // ref.listen(configurationProvider, (previous, next) {
+    //
+    // });
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
           statusBarColor: theme.startGradientColor,
       ),
       child: Scaffold(
+        floatingActionButtonLocation: ExpandableFab.location,
+        floatingActionButton: _currentIndex == 0 ? ExpandableFab(
+          key: _fabKey,
+          distance: 70,
+          type: ExpandableFabType.up,
+          openButtonBuilder: RotateFloatingActionButtonBuilder(
+            child: const Icon(Icons.add),
+            fabSize: ExpandableFabSize.regular,
+            foregroundColor: Colors.white,
+            backgroundColor: Colors.blue,
+            shape: const CircleBorder(),
+          ),
+          children: [
+            FloatingActionButton.extended(
+              heroTag: null,
+              icon: const Icon(Icons.add),
+              label: const Text('New File'),
+              onPressed: () {
+                _fabKey.currentState?.toggle();
+                getMenuBus().fire(NewFileEvent());
+              },
+            ),
+            FloatingActionButton.extended(
+              heroTag: null,
+              icon: const Icon(Icons.add),
+              label: const Text('New Category'),
+              onPressed: () {
+                _fabKey.currentState?.toggle();
+                getMenuBus().fire(NewCategoryEvent());
+              },
+            ),
+            FloatingActionButton.extended(
+              heroTag: null,
+              icon: const Icon(Icons.add),
+              label: const Text('New Todo'),
+              onPressed: () {
+                _fabKey.currentState?.toggle();
+                getMenuBus().fire(NewTodoEvent());
+              },
+            ),
+          ],
+        ) : SizedBox.shrink(),
         body: SafeArea(
           child: IndexedStack(
             index: _currentIndex,

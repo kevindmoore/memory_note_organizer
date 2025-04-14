@@ -21,6 +21,7 @@ abstract class Category with _$Category {
     @JsonKey(includeIfNull: false) int? todoFileId,
     @JsonKey(name: 'user_id', includeIfNull: false) String? userId,
     @JsonKey(name: 'last_updated', includeIfNull: false) DateTime? lastUpdated,
+    @JsonKey(name: 'created_at', includeIfNull: false) DateTime? createdAt,
     @JsonKey(includeFromJson: false, includeToJson: false)
     @Default(<Todo>[]) List<Todo> todos,
   }) = _Category;

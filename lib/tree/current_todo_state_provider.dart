@@ -15,6 +15,36 @@ class CurrentTodoStateProvider extends StateNotifier<CurrentTodoState> {
 
   CurrentTodoState getCurrentTodoState() => state;
 
+  void setCurrentStateFromNode(Node todoNode) {
+    var todoRepository = ref.read(todoRepositoryProvider);
+    switch (todoNode.type) {
+      case NodeType.root:
+      case NodeType.file:
+      TodoFile? todoFile = todoRepository.findTodoFile(todoNode.todoInfo.todoFileId);
+      if (todoFile != null) {
+        state = state.copyWith(currentTodoFile: todoFile, currentCategory: null, currentTodo: null);
+      }
+      case NodeType.category:
+        Category? category = todoRepository.findCategory(todoNode.todoInfo.todoFileId, todoNode.todoInfo.categoryId);
+        if (category != null) {
+          state = state.copyWith(currentCategory: category, currentTodo: null);
+        }
+      case NodeType.todo:
+        Todo? todo = todoRepository.findTodo(todoNode.todoInfo.todoFileId, todoNode.todoInfo.categoryId, todoNode.id);
+        if (todo != null) {
+          state = state.copyWith(currentTodo: todo);
+        }
+    }
+  }
+
+  void setCurrentCategory(Category category) {
+    state = state.copyWith(currentCategory: category);
+  }
+
+  void setCurrentTodoFile(TodoFile todFile) {
+    state = state.copyWith(currentTodoFile: todFile);
+  }
+
   Node? goUp() {
     CurrentTodoState currentState = state;
     currentState = currentState.copyWith(currentlySelectedIndex: -1);
@@ -78,7 +108,6 @@ class CurrentTodoStateProvider extends StateNotifier<CurrentTodoState> {
         }
         if (index == -1) {
           index = todoRepository.findTodoFileIndex(node.id!);
-          logMessage('Found index of $index for todo file ${currentlySelectedTodoFile?.name}');
         }
         currentState = currentState.copyWith(currentCategory: null, currentTodo: null, currentlySelectedIndex: index);
         break;
@@ -90,11 +119,8 @@ class CurrentTodoStateProvider extends StateNotifier<CurrentTodoState> {
         } else {
           if (index == -1) {
             final todoFileIndex = todoRepository.findTodoFileIndex(node.todoInfo.todoFileId!);
-            logMessage('Found todoFileIndex of $todoFileIndex for category ${currentlySelectedCategory.name}');
             final categoryIndex = todoRepository.findCategoryIndex(node.todoInfo.todoFileId!, node.todoInfo.categoryId!);
-            logMessage('Found categoryIndex of $categoryIndex for category ${currentlySelectedCategory.name}');
             index = todoFileIndex + categoryIndex;
-            logMessage('Found index of $index for category ${currentlySelectedCategory.name}');
           }
           currentState = currentState.copyWith(currentCategory: currentlySelectedCategory, currentTodo: null, currentlySelectedIndex: index);
         }
@@ -115,13 +141,9 @@ class CurrentTodoStateProvider extends StateNotifier<CurrentTodoState> {
         final todoCategory = todoRepository.findCategory(node.todoInfo.todoFileId, node.todoInfo.categoryId);
         if (index == -1) {
           final todoFileIndex = todoRepository.findTodoFileIndex(node.todoInfo.todoFileId!);
-          logMessage('Found todoFileIndex of $todoFileIndex for todo ${foundTodo?.name}');
           final categoryIndex = todoRepository.findCategoryIndex(node.todoInfo.todoFileId!, node.todoInfo.categoryId!);
-          logMessage('Found categoryIndex of $categoryIndex for todo ${foundTodo?.name}');
-          final todoIndex = todoRepository.findTodoIndex(node.todoInfo.todoFileId!, node.todoInfo.categoryId!, node.id!);
-          logMessage('Found todoIndex of $todoIndex for todo ${foundTodo?.name}');
+          final todoIndex =  node.id != null ? todoRepository.findTodoIndex(node.todoInfo.todoFileId!, node.todoInfo.categoryId!, node.id!) : 0;
           index = todoFileIndex + categoryIndex + todoIndex;
-          logMessage('index $index for todo ${foundTodo?.name}');
         }
         currentState = currentState.copyWith(currentTodo: foundTodo, currentCategory: todoCategory, currentTodoFile: todoFile, currentlySelectedIndex: index);
         break;

@@ -48,6 +48,7 @@ abstract class TodoFile with _$TodoFile {
     int? id,
     @JsonKey(name: 'user_id', includeIfNull: false) String? userId,
     @JsonKey(name: 'last_updated', includeIfNull: false) DateTime? lastUpdated,
+    @JsonKey(name: 'created_at', includeIfNull: false) DateTime? createdAt,
     @JsonKey(includeFromJson: false, includeToJson: false)
     @Default(<Category>[]) List<Category> categories,
   }) = _TodoFile;
@@ -55,11 +56,7 @@ abstract class TodoFile with _$TodoFile {
   factory TodoFile.fromJson(Map<String, dynamic> json) =>
       _$TodoFileFromJson(json);
 
-  @override
-  String toString() {
-    return 'TodoFile(name: $name id: $id Num categories: ${categories.length}';
-  }
-}
+ }
 
 // @JsonSerializable(explicitToJson: true)
 @Freezed(makeCollectionsUnmodifiable: false)
@@ -87,6 +84,7 @@ abstract class Todo with _$Todo {
     int? parentTodoId,
     @Default('') String notes,
     @JsonKey(name: 'last_updated', includeIfNull: false) DateTime? lastUpdated,
+    @JsonKey(name: 'created_at', includeIfNull: false) DateTime? createdAt,
 
     @JsonKey(includeFromJson: false, includeToJson: false)
     @Default(<Todo>[]) List<Todo> children,
@@ -94,8 +92,4 @@ abstract class Todo with _$Todo {
 
   factory Todo.fromJson(Map<String, dynamic> json) => _$TodoFromJson(json);
 
-  @override
-  String toString() {
-    return 'Todo(name: $name id: $id Num children: ${children.length}';
-  }
 }

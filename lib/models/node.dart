@@ -1,4 +1,7 @@
+import 'dart:core';
+
 import 'package:collection/collection.dart';
+import 'package:equatable/equatable.dart';
 import 'package:lumberdash/lumberdash.dart';
 import 'package:memory_notes_organizer/tree/tree_node.dart';
 
@@ -19,7 +22,8 @@ class TodoInfo {
   }
 }
 
-class Node {
+// ignore: must_be_immutable
+class Node extends Equatable {
   final String name;
   final int? id;
   final List<Node> children = [];
@@ -27,21 +31,37 @@ class Node {
   final NodeType type;
   TodoInfo todoInfo;
 
-  Node({
-    required this.name,
-    this.id,
-    required this.type,
-    this.previous,
-    required this.todoInfo,
-  });
+  Node({required this.name, this.id, required this.type, this.previous, required this.todoInfo});
+
+  // @override
+  // String toString() {
+  //   return 'Node(name: $name, id: $id, type: $type, previous: $previous todoInfo: $todoInfo children: ${children.length})';
+  // }
+  @override
+  bool get stringify => true;
 
   @override
-  String toString() {
-    return 'Node(name: $name, id: $id, type: $type, previous: $previous todoInfo: $todoInfo children: ${children.length})';
-  }
+  List<Object?> get props => [id, name, previous, type, todoInfo];
+
+  // @override
+  // bool operator ==(Object other) {
+  //   return identical(this, other) ||
+  //       other is Node &&
+  //           runtimeType == other.runtimeType &&
+  //           name == other.name &&
+  //           id == other.id &&
+  //           type == other.type; // Use a helper
+  // }
+  //
+  // @override
+  // int get hashCode => Object.hash(runtimeType, name, id, type);
 
   int? getId() {
     return id;
+  }
+
+  Node copyWithName(String newName) {
+    return Node(name: newName, id: id, type: type, previous: previous, todoInfo: todoInfo);
   }
 
   int numChildren() => children.length;
@@ -85,7 +105,7 @@ class Node {
       if (todoNode.todoInfo.parentId != null) {
         return findTodoNode(rootNode, todoNode.todoInfo.parentId);
       } else {
-        return findCategoryNode(rootNode, id);
+        return findCategoryNode(rootNode, todoNode.todoInfo.categoryId);
       }
     }
     return null;
@@ -142,30 +162,37 @@ class Node {
       switch (currentParentNode.type) {
         case NodeType.root:
         case NodeType.file:
-          final index = currentParentNode.children.indexOf(currentNode!);
-          logMessage('Found index of $index for node: ${currentNode.name}');
+          final index = currentParentNode.children.indexWhere(
+            (node) => node.id == currentNode!.id!,
+          );
+          logMessage('Found file index of $index for node: ${currentNode?.name}');
           if (index != -1) {
-            count += index;
+            count += index + 1;
           }
           break;
         case NodeType.category:
-          final index = currentParentNode.children.indexOf(currentNode!);
-          logMessage('Found index of $index for node: ${currentNode.name}');
+          final index = currentParentNode.children.indexWhere(
+            (node) => node.id == currentNode!.id!,
+          );
+          logMessage('Found category index of $index for node: ${currentNode?.name}');
           if (index != -1) {
-            count += index;
+            count += index + 1;
           }
           break;
         case NodeType.todo:
-          final index = currentParentNode.previous != null ? currentParentNode.previous!.children.indexOf(currentNode!) : -1;
-          logMessage('Found index of $index for node: ${currentNode?.name}');
+          final index = currentParentNode.children.indexWhere(
+            (node) => node.id == currentNode!.id!,
+          );
+          logMessage('Found todo index of $index for node: ${currentNode?.name}');
           if (index != -1) {
-            count += index;
+            count += index + 1;
           }
           break;
       }
       currentNode = currentParentNode;
       currentParentNode = currentParentNode.previous;
     }
+    logMessage('Count $count for node: ${currentNode?.name}');
     return count;
   }
 
@@ -307,6 +334,23 @@ class Node {
     final index = categoryNode.indexOfNode(categoryNode, newTodoNode);
     if (index != -1) {
       categoryNode.children[index] = newTodoNode;
+    }
+  }
+
+  void replaceChildNodeWithNode(Node parentNode, Node currentNode, Node newTodoNode) {
+    var index = 0;
+    for (final treeNode in parentNode.children) {
+      if (identical(treeNode, currentNode)) {
+        parentNode.children[index] = newTodoNode;
+      }
+      index++;
+    }
+  }
+
+  void deleteNode(Node currentlySelectedNode) {
+    Node? parentNode = currentlySelectedNode.previous;
+    if (parentNode != null) {
+      parentNode.children.remove(currentlySelectedNode);
     }
   }
 }

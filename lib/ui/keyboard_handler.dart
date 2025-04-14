@@ -26,7 +26,7 @@ class KeyboardHandler extends ConsumerWidget {
   Map<Type, Action<Intent>> createActions(WidgetRef ref) {
     final actions = <Type, Action<Intent>>{};
     actions[SearchIntent] = CallbackAction(onInvoke: (e) {
-      ref.read(menuBus).fire(ShowSearchEvent());
+      ref.read(eventBusProvider).fire(ShowSearchEvent());
       return null;
     });
     //SearchAction();

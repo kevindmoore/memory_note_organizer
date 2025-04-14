@@ -13,10 +13,14 @@ class SearchPanel extends ConsumerStatefulWidget {
   ConsumerState<SearchPanel> createState() => _SearchPanelState();
 }
 
-class _SearchPanelState extends ConsumerState<SearchPanel> {
+class _SearchPanelState extends ConsumerState<SearchPanel> with AutomaticKeepAliveClientMixin {
   late TextEditingController searchTextController;
   List<SearchResult> searchResults = <SearchResult>[];
   late FocusNode textFocusNode;
+
+  @override
+  bool get wantKeepAlive => true;
+
 
   @override
   void initState() {
@@ -33,6 +37,8 @@ class _SearchPanelState extends ConsumerState<SearchPanel> {
 
   @override
   Widget build(BuildContext context) {
+    // Required for automatic keep alive
+    super.build(context);
     var theme = ref.watch(themeProvider);
     final todoManager = ref.watch(todoManagerProvider);
     final searchText = ref.watch(searchTextStateProvider);
@@ -225,7 +231,7 @@ class _SearchPanelState extends ConsumerState<SearchPanel> {
                     ),
                   ),
                   onTap: () {
-                    ref.read(searchBus).fire(result);
+                    ref.read(searchBusProvider).fire(result);
                   },
                 ));
           }),

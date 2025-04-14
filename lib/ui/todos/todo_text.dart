@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
-import 'package:focus_detector/focus_detector.dart';
+import 'package:lumberdash/lumberdash.dart';
 import 'package:memory_notes_organizer/models/current_todo_state.dart';
 import 'package:memory_notes_organizer/models/todos.dart';
 import 'package:memory_notes_organizer/providers.dart';
@@ -53,12 +53,20 @@ class _TodoTextState extends ConsumerState<TodoText> {
         startTimer();
       }
     });
+    todoTextFocusNode.addListener(() {
+      if (todoTextFocusNode.hasFocus) {
+        onFocusGained();
+      } else {
+        onFocusLost();
+      }
+    });
   }
 
   @override
   void dispose() {
     saveNotes();
     todoNoteTextController.dispose();
+    todoTextFocusNode.dispose();
     super.dispose();
   }
 
@@ -99,20 +107,16 @@ class _TodoTextState extends ConsumerState<TodoText> {
       );
       scrollController.jumpTo(currentSearchPosition.toDouble());
     }
-    return FocusDetector(
-      onFocusGained: startTimer,
-      onFocusLost: saveNotes,
-      child: TextField(
-        decoration: const InputDecoration(border: InputBorder.none),
-        style: getMediumTextStyle(theme.textColor),
-        keyboardType: TextInputType.multiline,
-        // autofocus: true,
-        maxLines: null,
-        cursorColor: Colors.black,
-        focusNode: todoTextFocusNode,
-        controller: todoNoteTextController,
-        scrollController: scrollController,
-      ),
+    return TextField(
+      decoration: const InputDecoration(border: InputBorder.none),
+      style: getMediumTextStyle(theme.textColor),
+      keyboardType: TextInputType.multiline,
+      // autofocus: true,
+      maxLines: null,
+      cursorColor: Colors.black,
+      focusNode: todoTextFocusNode,
+      controller: todoNoteTextController,
+      scrollController: scrollController,
     );
   }
 
@@ -133,6 +137,7 @@ class _TodoTextState extends ConsumerState<TodoText> {
         final updatedTodo = currentTodo!.copyWith(notes: todoNoteTextController.text);
         SchedulerBinding.instance.addPostFrameCallback((_) {
           widget.todoChangedCallback(updatedTodo);
+          startTimer();
         });
       }
     }
@@ -172,5 +177,12 @@ class _TodoTextState extends ConsumerState<TodoText> {
       }
       settingTodoText = false;
     });
+  }
+
+  void onFocusGained() {
+    startTimer();
+  }
+  void onFocusLost() {
+    saveNotes();
   }
 }

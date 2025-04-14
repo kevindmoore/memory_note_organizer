@@ -191,7 +191,7 @@ class TodoTableHandler {
     return result;
   }
 
-  Future updateTodo(Todo todo) async {
+  Future<Todo?> updateTodo(Todo todo) async {
     todo = todo.copyWith(lastUpdated: DateTime.now());
     todoManager?.updateTodo(todo);
     if (todo.id == null && todo.parentTodoId != null) {
@@ -237,4 +237,5 @@ class TodoTableHandler {
     }
     return null;
   }
+
 }

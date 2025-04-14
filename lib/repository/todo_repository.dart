@@ -23,6 +23,7 @@ class TodoRepository extends ChangeNotifier {
   bool _disableNotifyNow = false;
   bool _loading = false;
   var remoteTodoFiles = TodoFiles(<TodoFile>[]);
+
   // final LocalRepo localRepo;
   final loadRemoteFilesFirst = true;
   late TodoTableHandler todoTableHandler;
@@ -32,17 +33,16 @@ class TodoRepository extends ChangeNotifier {
 
   TodoFile? get currentTodoFile => todoManager.currentTodoFile;
 
-  set currentTodoFile(TodoFile? todoFile) =>
-      todoManager.currentTodoFile = todoFile;
+  set currentTodoFile(TodoFile? todoFile) => todoManager.currentTodoFile = todoFile;
 
   int size() => todoManager.size();
 
-  TodoRepository(
-      {required this.ref,
-      required this.todoManager,
-      required this.databaseRepository,
-      // required this.localRepo
-      }) {
+  TodoRepository({
+    required this.ref,
+    required this.todoManager,
+    required this.databaseRepository,
+    // required this.localRepo
+  }) {
     _loading = true;
     // New Way
     // Steps:
@@ -53,20 +53,32 @@ class TodoRepository extends ChangeNotifier {
     // listenToLoginState();
     // Old Way - Load from remote database
     currentStateTableHandler = CurrentStateTableHandler(
-        ref, databaseRepository,
-        // localRepo,
-        todoManager);
-    todoTableHandler =
-        TodoTableHandler(ref, databaseRepository,
-            // localRepo,
-            todoManager);
+      ref,
+      databaseRepository,
+      // localRepo,
+      todoManager,
+    );
+    todoTableHandler = TodoTableHandler(
+      ref,
+      databaseRepository,
+      // localRepo,
+      todoManager,
+    );
     categoryTableHandler = CategoryTableHandler(
-        ref, databaseRepository,
-        // localRepo,
-        todoManager, todoTableHandler);
-    todoFileTableHandler = TodoFileTableHandler(ref, databaseRepository,
-        // localRepo,
-        todoManager, categoryTableHandler, currentStateTableHandler);
+      ref,
+      databaseRepository,
+      // localRepo,
+      todoManager,
+      todoTableHandler,
+    );
+    todoFileTableHandler = TodoFileTableHandler(
+      ref,
+      databaseRepository,
+      // localRepo,
+      todoManager,
+      categoryTableHandler,
+      currentStateTableHandler,
+    );
     if (loadRemoteFilesFirst) {
       // TODO: This is temporary to rebuild the database
       // localRepo.eraseDatabase();
@@ -111,28 +123,25 @@ class TodoRepository extends ChangeNotifier {
     }
   }
 
-  void addTodoFile(TodoFile todoFile) {
-    todoManager.addTodoFile(todoFile);
+  Future<Todo?> addNewTodoToCategory(int? todoFileId, int? categoryId, Todo todo) async {
+    final newTodo = todoTableHandler.addNewTodoToCategory(todoFileId, categoryId, todo);
     _notify();
+    return newTodo;
   }
 
-  Future<Todo?> addNewTodoToCategory(
-      int? todoFileId, int? categoryId, Todo todo) async {
-    final result = todoTableHandler.addNewTodoToCategory(todoFileId, categoryId, todo);
+  Future<Todo?> addNewTodo(int todoFileId, int categoryId, Todo todo) async {
+    final newTodo = todoTableHandler.addNewTodo(todo, todoFileId, categoryId);
     _notify();
-    return result;
-  }
-
-  Future<Todo?> addNewTodo(Todo todo, int todoFileId, int categoryId) async {
-    final result = todoTableHandler.addNewTodo(todo, todoFileId, categoryId);
-    _notify();
-    return result;
+    return newTodo;
   }
 
   Future<Todo?> addNewTodoToParent(
-      int? todoFileId, int? categoryId, int parentId, Todo todo) async {
-    return todoTableHandler.addNewTodoToParent(
-        todoFileId, categoryId, parentId, todo);
+    int? todoFileId,
+    int? categoryId,
+    int parentId,
+    Todo todo,
+  ) async {
+    return todoTableHandler.addNewTodoToParent(todoFileId, categoryId, parentId, todo);
   }
 
   void addTodo(Todo todo) {
@@ -140,18 +149,22 @@ class TodoRepository extends ChangeNotifier {
     _notify();
   }
 
-  Future<TodoFile?> addNewTodoFile(TodoFile todoFile) async {
+  Future<TodoFile> addNewTodoFile(TodoFile todoFile) async {
     if (await todoFileTableHandler.getTodoFileByName(todoFile.name) != null) {
-      logError( 'List with name ${todoFile.name} already exists');
-      return null;
+      logError('List with name ${todoFile.name} already exists');
+      return todoFile;
     }
-    final result = await todoFileTableHandler.addNewTodoFile(todoFile);
+    final updatedTodoFile = todoFile.copyWith(lastUpdated: DateTime.now());
+    final newTodoFile = await todoFileTableHandler.addNewTodoFile(updatedTodoFile);
     _notify();
-    return result;
+    return newTodoFile;
   }
 
-  Future<List<Category>> addCategories(
-      int todoFileId, List<Category> categories) async {
+  TodoFile addCategoryToTodoFile(TodoFile todoFile, Category category) {
+    return todoFile.copyWith(categories: [...todoFile.categories, category]);
+  }
+
+  Future<List<Category>> addCategories(int todoFileId, List<Category> categories) async {
     final updatedCategories = <Category>[];
     await Future.forEach(categories, (Category category) async {
       final updatedCategory = await addNewCategory(todoFileId, category);
@@ -177,10 +190,11 @@ class TodoRepository extends ChangeNotifier {
           currentTodoFiles.add(todoFile);
         }
         stopwatch.stop();
-        if (loadRemoteFilesFirst) {
-        }
+        if (loadRemoteFilesFirst) {}
       });
       _loading = false;
+      sortTodoFiles(currentTodoFiles);
+      // logMessage('Loaded ${currentTodoFiles.length} files: $currentTodoFiles');
       ref.read(currentFilesProvider.notifier).setTodoFiles(currentTodoFiles);
     }
 
@@ -205,7 +219,12 @@ class TodoRepository extends ChangeNotifier {
   }
 
   Future<TodoFile?> loadTodoFileCategoriesAndTodos(int todoFileId) async {
-    final todoFile = await todoFileTableHandler.loadTodoFileCategoriesAndTodos(todoFileId);
+    var todoFile = await todoFileTableHandler.loadTodoFileCategoriesAndTodos(todoFileId);
+    if (todoFile != null) {
+      List<Category> sortedCategories = List.from(todoFile.categories);
+      sortCategories(sortedCategories);
+      todoFile = todoFile.copyWith(categories: sortedCategories);
+    }
     _notify();
     return todoFile;
   }
@@ -216,15 +235,13 @@ class TodoRepository extends ChangeNotifier {
 
   Future<List<Category>?> loadCategoriesForFileId(int todoFileId) async {
     return categoryTableHandler.loadCategoriesForFileId(todoFileId);
-
   }
 
   Future<List<Category>> getCategoriesWithFileId(int todoFileId) async {
-    return categoryTableHandler.getCategoriesWithFileId(todoFileId);
+    return categoryTableHandler.getCategoriesAndTodosWithFileId(todoFileId);
   }
 
-  Future<List<Todo>> getTodosWithFileAndCategory(
-      int todoFileId, int categoryId) async {
+  Future<List<Todo>> getTodosWithFileAndCategory(int todoFileId, int categoryId) async {
     return todoTableHandler.getTodosWithFileAndCategory(todoFileId, categoryId);
   }
 
@@ -234,7 +251,6 @@ class TodoRepository extends ChangeNotifier {
 
   Future<CurrentState?> getCurrentState() async {
     return currentStateTableHandler.getCurrentState();
-
   }
 
   void updateCurrentFiles() async {
@@ -246,12 +262,15 @@ class TodoRepository extends ChangeNotifier {
   }
 
   Future<List<TodoFile>?> getTodoFiles() async {
-    return todoFileTableHandler.getTodoFiles();
+    var todoFiles = await todoFileTableHandler.getTodoFiles();
+    if (todoFiles != null) {
+      sortTodoFiles(todoFiles);
+    }
+    return todoFiles;
   }
 
   Future<TodoFile?> getTodoFile(int todoDocId) async {
     return todoFileTableHandler.getTodoFile(todoDocId);
-
   }
 
   Future<TodoFile?> saveTodoFile(TodoFile todoFile) async {
@@ -260,13 +279,12 @@ class TodoRepository extends ChangeNotifier {
 
   Future deleteTodoFileById(int? todoFileId) async {
     if (todoFileId == null) {
-      logError( 'deleteTodoFileById: todoFileId is null');
+      logError('deleteTodoFileById: todoFileId is null');
       return null;
     }
     final todoFile = findTodoFile(todoFileId);
     if (todoFile == null) {
-      logError(
-         'deleteTodoFileById: TodoFile not found for $todoFileId');
+      logError('deleteTodoFileById: TodoFile not found for $todoFileId');
       return null;
     }
     return deleteTodoFile(todoFile);
@@ -283,19 +301,18 @@ class TodoRepository extends ChangeNotifier {
     _notify();
   }
 
-  Future deleteCategoryById(
-      int? todoFileId, int? categoryId, bool removeFromList) async {
+  Future deleteCategoryById(int? todoFileId, int? categoryId, bool removeFromList) async {
     if (todoFileId == null) {
-      logError( 'deleteCategoryById: todoFileId is null');
+      logError('deleteCategoryById: todoFileId is null');
       return null;
     }
     if (categoryId == null) {
-      logError( 'deleteCategoryById: categoryId is null');
+      logError('deleteCategoryById: categoryId is null');
       return null;
     }
     final category = findCategory(todoFileId, categoryId);
     if (category == null) {
-      logError( 'deleteCategoryById: category is null');
+      logError('deleteCategoryById: category is null');
       return null;
     }
     return deleteCategory(category, removeFromList);
@@ -307,19 +324,18 @@ class TodoRepository extends ChangeNotifier {
     return result;
   }
 
-  Future deleteTodoById(int? todoFileId, int? categoryId, int? todoId,
-      bool removeFromList) async {
+  Future deleteTodoById(int? todoFileId, int? categoryId, int? todoId, bool removeFromList) async {
     if (todoFileId == null) {
-      logError( 'deleteTodoById: todoFileId is null');
+      logError('deleteTodoById: todoFileId is null');
       return null;
     }
     if (categoryId == null) {
-      logError( 'deleteTodoById: categoryId is null');
+      logError('deleteTodoById: categoryId is null');
       return null;
     }
     final todo = findTodo(todoFileId, categoryId, todoId);
     if (todo == null) {
-      logError( 'deleteTodoById: todo is null');
+      logError('deleteTodoById: todo is null');
       return null;
     }
     return deleteTodo(todo, removeFromList);
@@ -343,54 +359,51 @@ class TodoRepository extends ChangeNotifier {
 
   Future updateTodoFileById(int? todoFileId, String updatedFileName) async {
     if (todoFileId == null) {
-      logError( 'updateTodoFileById: todoFileId is null');
+      logError('updateTodoFileById: todoFileId is null');
       return null;
     }
     var todoFile = todoManager.findTodoFile(todoFileId);
     if (todoFile == null) {
-      logError(
-          'updateTodoFileById: Could not find TodoFile for $todoFileId');
+      logError('updateTodoFileById: Could not find TodoFile for $todoFileId');
       return null;
     }
-    todoFile =
-        todoFile.copyWith(name: updatedFileName, lastUpdated: DateTime.now());
+    todoFile = todoFile.copyWith(name: updatedFileName);
     return updateTodoFile(todoFile);
   }
 
-  Future updateTodoFile(TodoFile todoFile) async {
-    final result = todoFileTableHandler.updateTodoFile(todoFile);
+  Future<TodoFile?> updateTodoFile(TodoFile todoFile) async {
+    TodoFile? updatedTodoFile = todoFile.copyWith(lastUpdated: DateTime.now());
+    updatedTodoFile = await todoFileTableHandler.updateTodoFile(updatedTodoFile);
     _notify();
-    return result;
+    return updatedTodoFile;
   }
 
-  Future updateTodo(Todo todo) async {
-    final result = todoTableHandler.updateTodo(todo);
+  Future<Todo?> updateTodo(Todo todo) async {
+    final updatedTodo = await todoTableHandler.updateTodo(todo);
     _notify();
-    return result;
+    return updatedTodo;
   }
 
   Todo? findDeepTodo(int? todoFileId, int? categoryId, int? id) {
     return todoManager.findDeepTodo(todoFileId, categoryId, id);
   }
 
-  Future updateCategoryById(
-      int? todoFileId, int? categoryId, String updatedCategoryName) async {
+  Future updateCategoryById(int? todoFileId, int? categoryId, String updatedCategoryName) async {
     if (categoryId == null || todoFileId == null) {
-      logError(
-          'updateCategoryById: categoryId or todoFileId is null');
+      logError('updateCategoryById: categoryId or todoFileId is null');
       return null;
     }
     var category = todoManager.findFileCategory(todoFileId, categoryId);
     if (category == null) {
-      logError( 'updateCategoryById: category is null');
+      logError('updateCategoryById: category is null');
       return null;
     }
-    category = category.copyWith(
-        name: updatedCategoryName, lastUpdated: DateTime.now());
+    category = category.copyWith(name: updatedCategoryName);
     return updateCategory(category);
   }
 
   Future updateCategory(Category updatedCategory) async {
+    updatedCategory = updatedCategory.copyWith(lastUpdated: DateTime.now());
     final result = categoryTableHandler.updateCategory(updatedCategory);
     _notify();
     return result;
@@ -410,18 +423,13 @@ class TodoRepository extends ChangeNotifier {
   }
 
   Future<Category?> addNewCategory(int todoFileId, Category category) async {
-    return categoryTableHandler.addNewCategory(todoFileId, category);
-
-  }
-
-  void addCategory(Category category) {
-    if (category.todoFileId == null) {
-      logError(
-          'addCategory: Category ${category.name} todo file id is null');
-      return;
+    Category? updatedCategory = category.copyWith(lastUpdated: DateTime.now());
+    var todoFile = findTodoFile(todoFileId);
+    if (todoFile != null) {
+      updateTodoFile(todoFile);
     }
-    todoManager.addCategory(category.todoFileId!, category);
-    _notify();
+    updatedCategory = await categoryTableHandler.addNewCategory(todoFileId, updatedCategory);
+    return updatedCategory;
   }
 
   TodoFile? findTodoFile(int? id) {
@@ -452,10 +460,8 @@ class TodoRepository extends ChangeNotifier {
     return todoManager.findCategoryIndex(todoFileId, categoryId);
   }
 
-  Todo? findTodoInParentTodo(
-      int? todoFileId, int? categoryId, int? parentId, int? id) {
-    return todoManager.findTodoInParentTodo(
-        todoFileId, categoryId, parentId, id);
+  Todo? findTodoInParentTodo(int? todoFileId, int? categoryId, int? parentId, int? id) {
+    return todoManager.findTodoInParentTodo(todoFileId, categoryId, parentId, id);
   }
 
   Category? findCategory(int? todoFileId, int? categoryId) {
@@ -513,15 +519,21 @@ class TodoRepository extends ChangeNotifier {
     _notify();
   }
 
+  void closeFile(TodoFile todoFile) {
+    todoManager.closeFile(todoFile);
+    updateCurrentFiles();
+    _notify();
+  }
+
   void closeAllFiles() {
     todoManager.closeAllFiles();
     updateCurrentFiles();
     _notify();
   }
 
-  void reload() async {
+  FutureOr<TodoFiles> reload() async {
     todoManager.clearList();
-    loadRemoteFiles();
+    return await loadRemoteFiles();
   }
 
   void loadFile(File file, String name) async {
@@ -537,70 +549,152 @@ class TodoRepository extends ChangeNotifier {
 
   Future<TodoFile?> duplicateTodoFile(int? todoFileId, String newName) async {
     if (todoFileId == null) {
-      logError( 'todoFileId is null');
+      logError('todoFileId is null');
       return null;
     }
     final todoFile = todoManager.findTodoFile(todoFileId);
     if (todoFile == null) {
-      logError( 'todoFile not found');
+      logError('todoFile not found');
       return null;
     }
 
-    final copiedTodoFile =
-        todoFile.copyWith(name: newName, id: null, lastUpdated: DateTime.now());
+    final copiedTodoFile = todoFile.copyWith(name: newName, id: null, lastUpdated: DateTime.now());
     return addNewTodoFile(copiedTodoFile);
   }
 
-  Future<Category?> duplicateCategory(
-      int? todoFileId, int? categoryId, String newName) async {
+  Future<Category?> duplicateCategory(int? todoFileId, int? categoryId, String newName) async {
     if (todoFileId == null) {
-      logError( 'todoFileId is null');
+      logError('todoFileId is null');
       return null;
     }
     if (categoryId == null) {
-      logError( 'categoryId is null');
+      logError('categoryId is null');
       return null;
     }
     final category = todoManager.findFileCategory(todoFileId, categoryId);
     if (category == null) {
-      logError( 'category not found');
+      logError('category not found');
       return null;
     }
 
-    final copiedCategory =
-        category.copyWith(name: newName, id: null, lastUpdated: DateTime.now());
-    return addNewCategory(todoFileId, copiedCategory);
+    final todoFile = todoManager.findTodoFile(todoFileId);
+    Category? copiedCategory = category.copyWith(name: newName, id: null, lastUpdated: DateTime.now());
+    copiedCategory = await addNewCategory(todoFileId, copiedCategory);
+    if (copiedCategory == null) {
+      logError('copiedCategory is null');
+      return null;
+    }
+    todoManager.addCategory(todoFileId, copiedCategory);
+    final List<Todo> childTodos = [];
+    for (final todo in category.todos) {
+      var copiedTodo = await duplicateTodo(todoFileId, category.id, copiedCategory.id, todo.id, todo.name);
+      if (copiedTodo != null) {
+        childTodos.add(copiedTodo);
+      }
+    }
+    copiedCategory = copiedCategory.copyWith(todos: childTodos);
+    return copiedCategory;
   }
 
-  Future<Todo?> duplicateTodo(
-      int? todoFileId, int? categoryId, int? id, String newName) async {
+  Future<Todo?> duplicateTodo(int? todoFileId, int? categoryId, int? newCategoryId, int? id, String newName) async {
     if (todoFileId == null) {
-      logError( 'todoFileId is null');
+      logError('todoFileId is null');
       return null;
     }
     if (categoryId == null) {
-      logError( 'categoryId is null');
+      logError('categoryId is null');
       return null;
     }
     if (id == null) {
-      logError( 'id is null');
+      logError('id is null');
       return null;
     }
     final todo = todoManager.findDeepTodo(todoFileId, categoryId, id);
     if (todo == null) {
-      logError( 'todo not found');
+      logError('todo not found');
       return null;
     }
 
-    final copiedTodo =
-        todo.copyWith(name: newName, id: null, lastUpdated: DateTime.now());
+    final copiedTodo = todo.copyWith(name: newName, id: null, lastUpdated: DateTime.now());
     if (copiedTodo.parentTodoId != null) {
-      return addNewTodoToParent(
-          todoFileId, categoryId, copiedTodo.parentTodoId!, todo);
+      return await addNewTodoToParent(todoFileId, newCategoryId, copiedTodo.parentTodoId!, todo);
     } else {
-      return addNewTodoToCategory(todoFileId, categoryId, copiedTodo);
+      return await addNewTodoToCategory(todoFileId, newCategoryId, copiedTodo);
     }
   }
+}
 
+/// Sort List of TodoFiles. Sorts in place
+void sortTodoFiles(List<TodoFile> todoFiles) {
+  todoFiles.sort((a, b) {
+    // Use last_updated if available, otherwise fallback to created_at
+    DateTime? dateA = a.lastUpdated ?? a.createdAt;
+    DateTime? dateB = b.lastUpdated ?? b.createdAt;
+    // Handle nulls first - place them at the end
+    if (dateA == null && dateB == null) {
+      // print('  Result: 0 (Both null)');
+      return 0; // Both null, equal
+    } else if (dateA == null) {
+      // print('  Result: 1 (A is null, Nulls Last)');
+      return 1; // a is null, b is not. a comes after b (nulls last).
+    } else if (dateB == null) {
+      // print('  Result: -1 (B is null, Nulls Last)');
+      return -1; // b is null, a is not. a comes before b (nulls last).
+    } else {
+      // Both are non-null, compare descending (latest first)
+      int comparisonResult = dateB.compareTo(dateA); // <<< Ensure this line is active
+      // print('  Result: $comparisonResult (dateB.compareTo(dateA))');
+      return comparisonResult;
+    }
+  });
+}
 
+/// Sort List of Category. Sorts in place
+void sortCategories(List<Category> categories) {
+  categories.sort((a, b) {
+    // Use last_updated if available, otherwise fallback to created_at
+    DateTime? dateA = a.lastUpdated ?? a.createdAt;
+    DateTime? dateB = b.lastUpdated ?? b.createdAt;
+    // Handle nulls first - place them at the end
+    if (dateA == null && dateB == null) {
+      // print('  Result: 0 (Both null)');
+      return 0; // Both null, equal
+    } else if (dateA == null) {
+      // print('  Result: 1 (A is null, Nulls Last)');
+      return 1; // a is null, b is not. a comes after b (nulls last).
+    } else if (dateB == null) {
+      // print('  Result: -1 (B is null, Nulls Last)');
+      return -1; // b is null, a is not. a comes before b (nulls last).
+    } else {
+      // Both are non-null, compare descending (latest first)
+      int comparisonResult = dateB.compareTo(dateA); // <<< Ensure this line is active
+      // print('  Result: $comparisonResult (dateB.compareTo(dateA))');
+      return comparisonResult;
+    }
+  });
+}
+
+/// Sort List of Todos. Sorts in place
+void sortTodos(List<Todo> todos) {
+  todos.sort((a, b) {
+    // Use last_updated if available, otherwise fallback to created_at
+    DateTime? dateA = a.lastUpdated ?? a.createdAt;
+    DateTime? dateB = b.lastUpdated ?? b.createdAt;
+    // Handle nulls first - place them at the end
+    if (dateA == null && dateB == null) {
+      // print('  Result: 0 (Both null)');
+      return 0; // Both null, equal
+    } else if (dateA == null) {
+      // print('  Result: 1 (A is null, Nulls Last)');
+      return 1; // a is null, b is not. a comes after b (nulls last).
+    } else if (dateB == null) {
+      // print('  Result: -1 (B is null, Nulls Last)');
+      return -1; // b is null, a is not. a comes before b (nulls last).
+    } else {
+      // Both are non-null, compare descending (latest first)
+      int comparisonResult = dateB.compareTo(dateA); // <<< Ensure this line is active
+      // print('  Result: $comparisonResult (dateB.compareTo(dateA))');
+      return comparisonResult;
+    }
+  });
 }

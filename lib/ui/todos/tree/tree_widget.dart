@@ -15,9 +15,9 @@ import 'package:memory_notes_organizer/models/todos.dart';
 import 'package:memory_notes_organizer/providers.dart';
 import 'package:memory_notes_organizer/ui/dialogs/search_dialog.dart';
 import 'package:memory_notes_organizer/ui/todos/todo_actions.dart';
+import 'package:memory_notes_organizer/ui/todos/tree/tree_row.dart';
 import 'package:memory_notes_organizer/ui/todos/tree/tree_viewmodel.dart';
 import 'package:memory_notes_organizer/ui/widgets/find_row.dart';
-import 'package:memory_notes_organizer/ui/widgets/row_menu.dart';
 import 'package:memory_notes_organizer/ui/widgets/widget_utils.dart';
 import 'package:utilities/utilities.dart';
 
@@ -31,17 +31,26 @@ class TreeWidget extends ConsumerStatefulWidget {
 class _TreeWidgetState extends ConsumerState<TreeWidget> with AutomaticKeepAliveClientMixin {
   late final TreeController<Node> treeController;
   final ScrollController scrollController = ScrollController();
+  TextEditingController nodeTextController = TextEditingController(text: '');
   late final TreeViewModel viewModel;
+  FocusNode treeFocusNode = FocusNode();
+  FocusNode textFieldFocusNode = FocusNode();
+  FocusNode treeRowFocusNode = FocusNode();
+
   List<TodoFile> currentTodoFiles = [];
   bool loading = true;
   bool searching = false;
+  bool initializing = true;
+  bool editing = true;
   late TodoActions todoActions;
+  Node? editingNode;
+  Node? editingParentNode;
 
   @override
   void initState() {
     super.initState();
     viewModel = ref.read(treeViewModelProvider);
-    todoActions = TodoActions(ref);
+    todoActions = ref.read(todoActionsProvider);
     treeController = TreeController<Node>(
       // Provide the root nodes that will be used as a starting point when
       // traversing your hierarchical data.
@@ -87,8 +96,10 @@ class _TreeWidgetState extends ConsumerState<TreeWidget> with AutomaticKeepAlive
 
   @override
   void dispose() {
+    treeFocusNode.dispose();
     treeController.dispose();
     scrollController.dispose();
+    nodeTextController.dispose();
     super.dispose();
   }
 
@@ -97,25 +108,30 @@ class _TreeWidgetState extends ConsumerState<TreeWidget> with AutomaticKeepAlive
     // Required for automatic keep alive
     super.build(context);
     var theme = ref.watch(themeProvider);
-    List<TodoFile> todoFiles = ref.watch(currentFilesProvider);
-    if (todoFiles.length != currentTodoFiles.length) {
-      currentTodoFiles = todoFiles;
-      if (todoFiles.isEmpty) {
-        loading = true;
+    ref.listen<List<TodoFile>>(currentFilesProvider, (previous, todoFiles) {
+      if (initializing && todoFiles.isEmpty) {
+        loading = false;
+        initializing = false;
       } else {
-        buildTree();
+        initializing = false;
+        if (todoFiles.length != currentTodoFiles.length) {
+          currentTodoFiles = todoFiles;
+          if (todoFiles.isEmpty) {
+            loading = true;
+          } else {
+            buildTree();
+          }
+        }
       }
-    }
+      setState(() {});
+    });
     if (loading) {
       return loadingWidget();
     }
     return FocusDetector(
-      onFocusGained: closeKeyboard,
+      onFocusGained: onFocusGained,
       child: Container(
-        decoration: createGradient(
-          theme.startGradientColor,
-          theme.endGradientColor,
-        ),
+        decoration: createGradient(theme.startGradientColor, theme.endGradientColor),
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
@@ -126,15 +142,26 @@ class _TreeWidgetState extends ConsumerState<TreeWidget> with AutomaticKeepAlive
               buildNavigationRow(),
               vSpace8,
               Expanded(
-                child: TreeView<Node>(
-                  treeController: treeController,
-                  controller: scrollController,
-                  nodeBuilder: (BuildContext context, TreeEntry<Node> entry) {
-                    if (entry.node.type == NodeType.root) {
-                      return SizedBox.shrink();
-                    }
-                    return getTreeRow(entry);
-                  },
+                child: Focus(
+                  focusNode: treeFocusNode,
+                  onKeyEvent: handleKeyEvent,
+                  child: TreeView<Node>(
+                    treeController: treeController,
+                    controller: scrollController,
+                    nodeBuilder: (BuildContext context, TreeEntry<Node> entry) {
+                      if (entry.node.type == NodeType.root) {
+                        return SizedBox.shrink();
+                      }
+                      return TreeRow(
+                        textController: nodeTextController,
+                        treeRowFocusNode: treeRowFocusNode,
+                        textFieldFocusNode: textFieldFocusNode,
+                        treeController: treeController,
+                        entry: entry,
+                        editing: entry.node == editingNode,
+                      );
+                    },
+                  ),
                 ),
               ),
             ],
@@ -142,69 +169,6 @@ class _TreeWidgetState extends ConsumerState<TreeWidget> with AutomaticKeepAlive
         ),
       ),
     );
-  }
-
-  Widget getTreeRow(TreeEntry<Node> entry) {
-    Node node = entry.node;
-    var theme = ref.watch(themeProvider);
-    Node? currentlySelectedNode = ref.watch(currentlySelectedNodeProvider);
-    final selected = currentlySelectedNode == node;
-    final color = selected ? theme.inverseTextColor : theme.textColor;
-    final row = GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onTap: () {
-        setState(() {
-          treeController.toggleExpansion(entry.node);
-          if (currentlySelectedNode != node) {
-          //   getTodoStateProvider().clearSelection();
-          // } else {
-            // Should be selected in this method
-            getTodoStateProvider().selectNode(node, -1);
-            // if (usePhone(mediaQuery)) {
-            //   // context.pushNamed(notesRouteName);
-            // }
-          }
-        });
-      },
-      child: TreeIndentation(
-        entry: entry,
-        guide: const IndentGuide.connectingLines(
-          indent: 24,
-          color: Colors.black,
-        ),
-        child: SizedBox(
-          height: 40,
-          child: Align(
-            alignment: Alignment.center,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                const SizedBox(width: 4),
-                Expanded(
-                  child: AutoSizeText(
-                    node.name,
-                    style: getMediumTextStyle(color),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                // if (node.children.isNotEmpty)
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: RowMenu(node, selected),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-    if (selected) {
-      return Container(decoration: createBlackBorderedBox(), child: row);
-    } else {
-      return row;
-    }
   }
 
   Future buildTree() async {
@@ -218,57 +182,81 @@ class _TreeWidgetState extends ConsumerState<TreeWidget> with AutomaticKeepAlive
   Widget buildNavigationRow() {
     var theme = ref.watch(themeProvider);
     Node? currentlySelectedNode = ref.watch(currentlySelectedNodeProvider);
-    if (currentlySelectedNode == null ||
-        currentlySelectedNode.type == NodeType.root) {
+    if (currentlySelectedNode == null || currentlySelectedNode.type == NodeType.root) {
+      final menuItems = <PopupMenuEntry<PopupMenuItem>>[];
+      menuItems.add(
+        buildPopupMenuItem(
+          child: Row(
+            children: [
+              const Icon(Icons.file_open),
+              const SizedBox(width: 4.0),
+              Text('Open', style: mediumBlackText),
+            ],
+          ),
+          onTap: () {
+            ref
+                .read(todoActionsProvider)
+                .openFile(viewModel.rootNode, viewModel, treeController);
+          },
+        ),
+      );
+      menuItems.add(
+          buildPopupMenuItem(
+            child: Row(
+              children: [
+                const Icon(Icons.close),
+                const SizedBox(width: 4.0),
+                Text('Close All', style: mediumBlackText),
+              ],
+            ),
+            onTap: () {
+              ref
+                  .read(todoActionsProvider)
+                  .closeAllFiles(viewModel.rootNode, viewModel, treeController);
+            },
+          ),
+      );
+      menuItems.add(
+          buildPopupMenuItem(
+            child: Row(
+              children: [
+                const Icon(Icons.refresh),
+                const SizedBox(width: 4.0),
+                Text('Reload', style: mediumBlackText),
+              ],
+            ),
+            onTap: () async {
+              await ref
+                  .read(todoActionsProvider)
+                  .reload();
+              treeController.rebuild();
+            },
+          ),
+      );
       return Row(
         children: [
           Text('Lists', style: getMediumTextStyle(theme.textColor)),
           const Spacer(),
-          IconButton(
+          buildIconButton(
             tooltip: 'New',
-            onPressed: () {},
+            onPressed: () {
+              ref.read(todoActionsProvider).newFile(viewModel.rootNode, viewModel, treeController);
+            },
             icon: Icon(Icons.add, color: theme.textColor),
           ),
-          PopupMenuButton(
+
+          buildPopupMenu(
             icon: Icon(Icons.more_vert, color: theme.textColor),
             itemBuilder:
-                (context) => [
-                  PopupMenuItem(
-                    child: Row(
-                      children: [
-                        const Icon(Icons.file_open),
-                        const SizedBox(width: 4.0),
-                        Text('Open', style: mediumBlackText),
-                      ],
-                    ),
-                    onTap: () {
-                      todoActions.openFile(viewModel.rootNode, viewModel, treeController);
-                    },
-                  ),
-                  PopupMenuItem(
-                    child: Row(
-                      children: [
-                        const Icon(Icons.close),
-                        const SizedBox(width: 4.0),
-                        Text('Close All', style: mediumBlackText),
-                      ],
-                    ),
-                    onTap: () {
-                      todoActions.closeAllFiles(viewModel.rootNode, viewModel, treeController);
-                    },
-                  ),
-                ],
+                (context) => menuItems,
           ),
         ],
       );
     } else {
       final rowWidgets = <Widget>[];
       rowWidgets.add(
-        IconButton(
+        buildIconButton(
           tooltip: 'Go Up',
-          constraints: const BoxConstraints(),
-          padding: const EdgeInsets.fromLTRB(2.0, 8.0, 0.0, 8.0),
-          alignment: Alignment.centerLeft,
           onPressed: () {
             getTodoStateProvider().goTop();
             treeController.collapseAll();
@@ -278,15 +266,15 @@ class _TreeWidgetState extends ConsumerState<TreeWidget> with AutomaticKeepAlive
         ),
       );
       rowWidgets.add(
-        IconButton(
+        buildIconButton(
           tooltip: 'Back',
-          constraints: const BoxConstraints(),
-          padding: const EdgeInsets.fromLTRB(2.0, 8.0, 0.0, 8.0),
-          alignment: Alignment.centerLeft,
           onPressed: () {
             final node = getTodoStateProvider().goUp();
             if (node != null) {
               treeController.collapse(node);
+            } else {
+              treeController.collapseAll();
+              treeController.expand(viewModel.rootNode);
             }
           },
           icon: Icon(Icons.chevron_left, color: theme.textColor),
@@ -320,71 +308,105 @@ class _TreeWidgetState extends ConsumerState<TreeWidget> with AutomaticKeepAlive
         ),
       );
       rowWidgets.add(
-        IconButton(
+        buildIconButton(
           tooltip: 'New',
           onPressed: () {
-            todoActions.newTodo(viewModel.rootNode, viewModel, treeController);
+            ref
+                .read(todoActionsProvider)
+                .newTodo(
+                  rootNode: viewModel.rootNode,
+                  currentMenuNode: null,
+                  treeViewModel: viewModel,
+                  treeController: treeController,
+                  scrollController: scrollController,
+                );
           },
           icon: Icon(Icons.add, color: theme.textColor),
         ),
       );
       if (currentlySelectedNode.type == NodeType.file ||
           currentlySelectedNode.type == NodeType.category) {
+        final menuItems = <PopupMenuEntry<PopupMenuItem>>[];
         final deleteText =
-            (currentlySelectedNode.type == NodeType.file)
-                ? 'Delete File'
-                : 'Delete Category';
+            (currentlySelectedNode.type == NodeType.file) ? 'Delete File' : 'Delete Category';
+        menuItems.add(
+            buildPopupMenuItem(
+              child: Row(
+                children: [
+                  const Icon(Icons.delete),
+                  const SizedBox(width: 4.0),
+                  Text(deleteText, style: mediumBlackText),
+                ],
+              ),
+              onTap: () {
+                if (currentlySelectedNode.type == NodeType.file) {
+                  ref
+                      .read(todoActionsProvider)
+                      .deleteFile(viewModel.rootNode, currentlySelectedNode, viewModel, treeController);
+                } else {
+                  ref
+                      .read(todoActionsProvider)
+                      .deleteCategory(viewModel.rootNode, currentlySelectedNode, viewModel, treeController);
+                }
+              },
+            ),
+        );
+        menuItems.add(
+            buildPopupMenuItem(
+              child: Row(
+                children: [
+                  const Icon(Icons.close),
+                  const SizedBox(width: 4.0),
+                  Text('Close', style: mediumBlackText),
+                ],
+              ),
+              onTap: () {
+                ref
+                    .read(todoActionsProvider)
+                    .closeFile(viewModel.rootNode, currentlySelectedNode, viewModel, treeController);
+              },
+            ),
+        );
         rowWidgets.add(
-          PopupMenuButton(
+          buildPopupMenu(
             icon: Icon(Icons.more_vert, color: theme.textColor),
             itemBuilder:
-                (context) => [
-                  PopupMenuItem(
-                    child: Row(
-                      children: [
-                        const Icon(Icons.delete),
-                        const SizedBox(width: 4.0),
-                        Text(deleteText, style: mediumBlackText),
-                      ],
-                    ),
-                    onTap: () {
-                      if (currentlySelectedNode.type == NodeType.file) {
-                        todoActions.deleteFile(viewModel.rootNode, viewModel, treeController);
-                      } else {
-                        todoActions.deleteCategory(viewModel.rootNode, viewModel, treeController);
-                      }
-                    },
-                  ),
-                  PopupMenuItem(
-                    child: Row(
-                      children: [
-                        const Icon(Icons.close),
-                        const SizedBox(width: 4.0),
-                        Text('Close', style: mediumBlackText),
-                      ],
-                    ),
-                    onTap: () {
-                      todoActions.closeFile(viewModel.rootNode, viewModel, treeController);
-                    },
-                  ),
-                  PopupMenuItem(
-                    child: Row(
-                      children: [
-                        const Icon(Icons.refresh),
-                        const SizedBox(width: 4.0),
-                        Text('Reload', style: mediumBlackText),
-                      ],
-                    ),
-                    onTap: () {
-                      todoActions.reloadFile(viewModel.rootNode, viewModel, treeController);
-                    },
-                  ),
-                ],
+                (context) => menuItems,
           ),
         );
       }
       return Row(children: rowWidgets);
     }
+  }
+
+  Widget buildPopupMenu({required Icon icon, required PopupMenuItemBuilder<PopupMenuItem> itemBuilder}) {
+    return PopupMenuButton(
+      icon: icon,
+      itemBuilder: itemBuilder,
+    );
+  }
+
+  PopupMenuEntry<PopupMenuItem> buildPopupMenuItem({required Widget child, VoidCallback? onTap}) {
+    return PopupMenuItem(
+      onTap: onTap,
+      child: child,
+    );
+  }
+
+  Row buildRow(List<Widget> widgets) {
+    return Row(children: widgets,);
+  }
+
+  IconButton buildIconButton({required String tooltip, required Widget icon, required VoidCallback onPressed}) {
+    return IconButton(
+      tooltip: tooltip,
+      constraints: const BoxConstraints(),
+      padding: const EdgeInsets.fromLTRB(2.0, 8.0, 0.0, 8.0),
+      alignment: Alignment.centerLeft,
+      onPressed: onPressed,
+      icon: icon,
+    );
+
   }
 
   String getCurrentPathString(Node? currentNode) {
@@ -417,23 +439,18 @@ class _TreeWidgetState extends ConsumerState<TreeWidget> with AutomaticKeepAlive
       todoActions.search(newSelectionState, viewModel.rootNode, treeController, (index, node) {
         logMessage('Searching for ${node.name} at index $index');
         getMenuBus().fire(TabSelectEvent(0));
-        final scrollOffset = index * 40.0;
+        todoActions.scrollToIndex(index, scrollController);
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          // expandNodesUntil(node);
-          scrollController.animateTo(
-            scrollOffset,
-            duration: Duration(milliseconds: 500),
-            curve: Curves.easeInOut,
-          );
+          expandNodesUntil(node);
           getTodoStateProvider().selectNode(node, -1);
           setState(() {});
         });
       });
-   });
+    });
     getMenuBus().on<Event>().listen((event) {
       switch (event.runtimeType) {
         case _ when event is CloseCurrentFileEvent:
-          todoActions.closeFile(viewModel.rootNode, viewModel, treeController);
+          todoActions.closeFile(viewModel.rootNode, event.node, viewModel, treeController);
           break;
         case _ when event is CloseAllFileEvent:
           todoActions.closeAllFiles(viewModel.rootNode, viewModel, treeController);
@@ -454,54 +471,76 @@ class _TreeWidgetState extends ConsumerState<TreeWidget> with AutomaticKeepAlive
           todoActions.newFile(viewModel.rootNode, viewModel, treeController);
           break;
         case _ when event is NewCategoryEvent:
-          todoActions.newCategory(viewModel.rootNode, viewModel, treeController);
+          todoActions.newCategory(
+            rootNode: viewModel.rootNode,
+            currentMenuNode: event.node,
+            viewModel: viewModel,
+            treeController: treeController,
+          );
           break;
         case _ when event is NewTodoEvent:
-          todoActions.newTodo(viewModel.rootNode, viewModel, treeController);
+          todoActions.newTodo(
+            rootNode: viewModel.rootNode,
+            currentMenuNode: event.node,
+            treeViewModel: viewModel,
+            treeController: treeController,
+            scrollController: scrollController,
+          );
           break;
         case _ when event is DeleteTodoEvent:
-          todoActions.deleteTodo(viewModel.rootNode, treeController);
+          todoActions.deleteTodo(
+            rootNode: viewModel.rootNode,
+            currentMenuNode: event.node,
+            treeController: treeController,
+          );
           break;
         case _ when event is RenameTodoEvent:
-          todoActions.renameTodo(viewModel.rootNode, viewModel, treeController);
+          todoActions.renameTodo(viewModel.rootNode, event.node, viewModel, treeController);
           break;
         case _ when event is ReloadEvent:
           todoActions.reload();
           break;
         case _ when event is ReloadFileEvent:
-          todoActions.reloadFile(viewModel.rootNode, viewModel, treeController);
+          todoActions.reloadFile(viewModel.rootNode, event.node, viewModel, treeController);
           break;
         case _ when event is CloseFileEvent:
-          todoActions.closeFile(viewModel.rootNode, viewModel, treeController);
+          todoActions.closeFile(viewModel.rootNode, event.node, viewModel, treeController);
           break;
         case _ when event is DuplicateFileEvent:
-          todoActions.duplicateFile(viewModel.rootNode, viewModel, treeController);
+          todoActions.duplicateFile(viewModel.rootNode, event.node, viewModel, treeController);
           break;
         case _ when event is DeleteFileEvent:
-          todoActions.deleteFile(viewModel.rootNode, viewModel, treeController);
+          todoActions.deleteFile(viewModel.rootNode, event.node, viewModel, treeController);
           break;
         case _ when event is RenameFileEvent:
-          todoActions.renameFile(viewModel.rootNode, viewModel, treeController);
+          todoActions.renameFile(viewModel.rootNode, event.node, viewModel, treeController);
           break;
         case _ when event is DuplicateCategoryEvent:
-          todoActions.duplicateCategory(viewModel.rootNode, viewModel, treeController);
+          todoActions.duplicateCategory(viewModel.rootNode, event.node, viewModel, treeController);
           break;
         case _ when event is DeleteCategoryEvent:
-          todoActions.deleteCategory(viewModel.rootNode, viewModel, treeController);
+          todoActions.deleteCategory(viewModel.rootNode, event.node, viewModel, treeController);
           break;
         case _ when event is RenameCategoryEvent:
-          todoActions.renameCategory(viewModel.rootNode, viewModel, treeController);
+          todoActions.renameCategory(viewModel.rootNode, event.node, viewModel, treeController);
           break;
         case _ when event is QuitEvent:
           final currentContext = ref.read(appRouterProvider).navigatorKey.currentContext!;
           if (currentContext.mounted) {
-            showAreYouSureDialog(currentContext, () {
-              SystemNavigator.pop();
-            }, () {
-              // No
-            });
+            showAreYouSureDialog(
+              currentContext,
+              () {
+                SystemNavigator.pop();
+              },
+              () {
+                // No
+              },
+            );
           }
 
+          break;
+        case _ when event is DuplicateTodoEvent:
+          todoActions.duplicateTodo(rootNode: viewModel.rootNode, currentMenuNode: event.node, viewModel: viewModel, treeController: treeController);
           break;
         case _ when event is TodoUpdatedEvent:
           viewModel.updateTodoNode(event.todo);
@@ -524,5 +563,149 @@ class _TreeWidgetState extends ConsumerState<TreeWidget> with AutomaticKeepAlive
 
   void closeKeyboard() {
     unawaited(dismissKeyboard());
+  }
+
+  void onFocusGained() {
+    closeKeyboard();
+  }
+
+  KeyEventResult handleKeyEvent(FocusNode node, KeyEvent event) {
+    // Correctly check for key press and Enter key
+    if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.enter) {
+      if (HardwareKeyboard.instance.isControlPressed || // Ctrl
+          HardwareKeyboard.instance.isMetaPressed) {
+
+        if (editing) {
+          Node? currentlySelectedNode = ref.read(currentlySelectedNodeProvider);
+          if (currentlySelectedNode != null && currentlySelectedNode.id == null) {
+            saveTodo(currentlySelectedNode);
+          } else {
+            renameTodo(currentlySelectedNode);
+          }
+        }
+// Add a new Node
+        editingParentNode = ref.read(currentlySelectedNodeProvider);
+        editingNode = viewModel.addNewNodeAtSelectedNode();
+        if (editingNode != null) {
+          treeController.rebuild();
+          treeController.expandAncestors(editingNode!);
+          nodeTextController.text = '';
+          textFieldFocusNode.requestFocus();
+          getTodoStateProvider().selectNode(editingNode!, -1);
+          setState(() {
+            editing = true;
+          });
+        }
+      } else if (HardwareKeyboard.instance.isAltPressed) {
+
+        // Add a new Sibling Node
+        Node? currentNode = ref.read(currentlySelectedNodeProvider);
+        editingParentNode = currentNode?.previous;
+        if (editingParentNode != null) {
+          editingNode = viewModel.addNewNodeToParent(editingParentNode!);
+          if (editingNode != null) {
+            treeController.rebuild();
+            treeController.expandAncestors(editingNode!);
+            nodeTextController.text = '';
+            textFieldFocusNode.requestFocus();
+            getTodoStateProvider().selectNode(editingNode!, -1);
+            setState(() {
+              editing = true;
+            });
+          }
+        }
+      } else {
+        if (editing) {
+          Node? currentlySelectedNode = ref.read(currentlySelectedNodeProvider);
+          if (currentlySelectedNode != null && currentlySelectedNode.id == null) {
+            saveTodo(currentlySelectedNode);
+          } else {
+            renameTodo(currentlySelectedNode);
+          }
+        }
+        setState(() {
+          editing = !editing;
+          if (editing) {
+            editingNode = ref.read(currentlySelectedNodeProvider);
+            nodeTextController.text = editingNode?.name ?? '';
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              textFieldFocusNode.requestFocus();
+              nodeTextController.selection = TextSelection.fromPosition(
+                TextPosition(offset: nodeTextController.text.length),
+              );
+            });
+          }
+        });
+      }
+      return KeyEventResult.handled;
+    }
+    if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.escape) {
+      setState(() {
+        if (editing) {
+          Node? currentlySelectedNode = ref.read(currentlySelectedNodeProvider);
+          if (currentlySelectedNode != null && currentlySelectedNode.id == null) {
+            saveTodo(currentlySelectedNode);
+          } else {
+            renameTodo(currentlySelectedNode);
+          }
+        }
+        editing = false;
+      });
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
+  }
+
+  Future saveTodo(Node currentlySelectedNode) async {
+    if (editing) {
+      if (nodeTextController.text.isNotEmpty && editingParentNode != null) {
+        Node updatedNode = await viewModel.updateItemAtSelectedNode(editingParentNode!, currentlySelectedNode, nodeTextController.text);
+        treeController.rebuild();
+        setState(() {});
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          getTodoStateProvider().selectNode(updatedNode, -1);
+          treeRowFocusNode.requestFocus();
+        });
+      } else {
+        // Delete the empty node
+        if (nodeTextController.text.isEmpty) {
+          Node? currentlySelectedNode = ref.read(currentlySelectedNodeProvider);
+          if (currentlySelectedNode != null) {
+            currentlySelectedNode.deleteNode(currentlySelectedNode);
+            treeController.rebuild();
+            setState(() {});
+          }
+        }
+      }
+      editing = false;
+      editingNode = null;
+      editingParentNode = null;
+    }
+  }
+
+  Future renameTodo(Node? currentlySelectedNode) async {
+    if (editing) {
+      if (nodeTextController.text.isNotEmpty) {
+        await viewModel.renameCurrentTodo(nodeTextController.text);
+        treeController.rebuild();
+        setState(() {});
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Node? currentlySelectedNode = ref.read(currentlySelectedNodeProvider);
+          if (currentlySelectedNode != null) {
+            Node? updatedNode = viewModel.rootNode.findNodeById(
+              viewModel.rootNode,
+              currentlySelectedNode.id,
+            );
+            if (updatedNode != null) {
+              getTodoStateProvider().selectNode(updatedNode, -1);
+            }
+            treeRowFocusNode.requestFocus();
+          }
+        });
+      }
+      editing = false;
+      editingNode = null;
+      editingParentNode = null;
+    }
   }
 }

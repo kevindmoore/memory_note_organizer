@@ -61,7 +61,7 @@ class _MainAppState extends ConsumerState<MainApp> {
           child: MaterialApp.router(
             scaffoldMessengerKey: scaffoldMessengerKey,
             routerConfig: router.config(),
-            title: 'Note Master',
+            title: 'Memory Notes Organizer',
             debugShowCheckedModeBanner: false,
             // theme: createTheme(),
           ),

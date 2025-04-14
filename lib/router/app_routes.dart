@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:memory_notes_organizer/providers.dart';
 import 'package:memory_notes_organizer/ui/login.dart';
+import 'package:memory_notes_organizer/ui/logout/logout_page.dart';
 import 'package:memory_notes_organizer/ui/main/main_screen.dart';
 import 'package:memory_notes_organizer/ui/main/main_screen_viewmodel.dart';
 
@@ -20,14 +21,15 @@ class AppRouter extends RootStackRouter {
       path: '/',
       initial: true,
       page: MainScreenRoute.page,
-      children: [],
     ),
     AutoRoute(path: '/login', page: LoginRoute.page),
+    AutoRoute(path: '/logout', page: LogoutPageRoute.page),
   ];
   @override
   late final List<AutoRouteGuard> guards = [
     AutoRouteGuard.simple((resolver, router) {
       MainScreenViewModel viewModel = ref.read(mainScreenViewModelProvider);
+      ref.watch(configurationProvider);
 
       if (viewModel.isLoggedIn() || resolver.routeName == LoginRoute.name) {
         // we continue navigation

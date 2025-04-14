@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:memory_notes_organizer/constants.dart';
 import 'package:memory_notes_organizer/providers.dart';
 
 
 typedef NameCallBack = void Function(String?);
 
-void showNewDialog(WidgetRef ref, String title, NameCallBack callBack) {
+void showNewDialog(Ref ref, String title, NameCallBack callBack) {
   final dialogState = ref.read(dialogStateProvider);
   if (!dialogState.newItemDialogShowing) {
     dialogState.newItemDialogShowing = true;
@@ -15,7 +14,7 @@ void showNewDialog(WidgetRef ref, String title, NameCallBack callBack) {
       context: ref.read(appRouterProvider).navigatorKey.currentContext!,
       builder: (context) =>
           NewItemDialog(
-            title: newTodoString,
+            title: title,
             callBack: callBack,
           ),
     );
@@ -51,7 +50,8 @@ class _NewItemDialogState extends ConsumerState<NewItemDialog> {
   Widget build(BuildContext context) {
     return CallbackShortcuts(
       bindings: {
-        const SingleActivator(LogicalKeyboardKey.keyY, meta: true): oKAction,
+        const SingleActivator(LogicalKeyboardKey.keyN, meta: true): oKAction,
+        const SingleActivator(LogicalKeyboardKey.enter, meta: false): oKAction,
         const SingleActivator(LogicalKeyboardKey.keyC, meta: true): cancel,
       },
       child: AlertDialog(
@@ -62,6 +62,7 @@ class _NewItemDialogState extends ConsumerState<NewItemDialog> {
           child: TextField(
             // decoration: const InputDecoration(border: InputBorder.none),
             keyboardType: TextInputType.text,
+            textCapitalization: TextCapitalization.sentences,
             autofocus: true,
             maxLines: 1,
             cursorColor: Colors.black,
@@ -76,12 +77,12 @@ class _NewItemDialogState extends ConsumerState<NewItemDialog> {
               onPressed: () {
                 cancel();
               },
-              child: const Text('Cancel')),
+              child: const Text('Cancel \u{2318}+C')),
           TextButton(
               onPressed: () {
                 oKAction();
               },
-              child: const Text('New')),
+              child: const Text('New \u{2318}+N')),
         ],
       ),
     );
@@ -98,6 +99,6 @@ class _NewItemDialogState extends ConsumerState<NewItemDialog> {
     final dialogState = ref.read(dialogStateProvider);
     dialogState.newItemDialogShowing = false;
     Navigator.pop(context);
-    widget.callBack(textController.text);
+    widget.callBack(textController.text.trim());
   }
 }

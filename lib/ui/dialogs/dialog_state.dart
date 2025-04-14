@@ -6,6 +6,7 @@ class DialogState {
   bool openDialogShowing = false;
   bool questionDialogShowing = false;
   bool renameDialogShowing = false;
+  bool duplicateDialogShowing = false;
   bool themeDialogShowing = false;
   bool newItemDialogShowing = false;
 }

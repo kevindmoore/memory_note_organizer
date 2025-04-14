@@ -28,7 +28,7 @@ class _LogsDialogState extends ConsumerState<LogsDialog> {
   @override
   Widget build(BuildContext context) {
     final query = MediaQuery.of(context);
-    final entries = ref.read(logProvider).logEntries;
+    final entries = ref.read(logContainerProvider).logEntries;
     return CallbackShortcuts(
       bindings: {
         const SingleActivator(LogicalKeyboardKey.keyO, meta: true): oKAction,

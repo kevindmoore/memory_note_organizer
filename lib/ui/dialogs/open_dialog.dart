@@ -3,37 +3,43 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:memory_notes_organizer/providers.dart';
 import '../../models/models.dart';
-import '../../repository/todo_repository.dart';
 
 typedef OpenCallBack = void Function(TodoFile?);
 
-void showOpen(BuildContext context, TodoRepository todoRepository,
+void showOpen(Ref ref,
     OpenCallBack callBack) async {
-  final todoFiles = await todoRepository.getTodoFiles();
-  if (!context.mounted) return;
-  if (todoFiles == null) {
+  BuildContext context = ref.read(appRouterProvider).navigatorKey.currentContext!;
+  final dialogState = ref.read(dialogStateProvider);
+  if (!dialogState.openDialogShowing) {
+    dialogState.openDialogShowing = true;
+    final todoRepository = ref.read(todoRepositoryProvider);
+    final todoFiles = await todoRepository.getTodoFiles();
+    if (!context.mounted) return;
+    if (todoFiles == null) {
+      showDialog(
+        context: context,
+        builder: (context) =>
+            AlertDialog(
+              title: const Text('No Files Found'),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('OK'),
+                  onPressed: () {
+                    if (!context.mounted) return;
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            ),
+      );
+      return;
+    }
     showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('No Files Found'),
-        actions: <Widget>[
-          TextButton(
-            child: const Text('OK'),
-            onPressed: () {
-              if (!context.mounted) return;
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      ),
-    );
-    return;
+        context: context,
+        builder: (context) {
+          return OpenDialog(todoFiles: todoFiles, callBack: callBack);
+        });
   }
-  showDialog(
-      context: context,
-      builder: (context) {
-        return OpenDialog(todoFiles: todoFiles, callBack: callBack);
-      });
 }
 
 class OpenDialog extends ConsumerStatefulWidget {
@@ -93,12 +99,12 @@ class _OpenDialogState extends ConsumerState<OpenDialog> {
                 onPressed: () {
                   cancel();
                 },
-                child: const Text('Cancel')),
+                child: const Text('Cancel (C)')),
             TextButton(
                 onPressed: () {
                   open();
                 },
-                child: const Text('Open')),
+                child: const Text('Open (O)')),
           ],
         ),
       ),

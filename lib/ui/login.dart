@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lumberdash/lumberdash.dart';
 import 'package:supa_manager/supa_manager.dart';
@@ -46,16 +47,21 @@ class _LoginState extends ConsumerState<Login> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Container(
-          decoration: createWhiteBorder(),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: useLoginScreen ? createLoginScreen() : createCreateAccountScreen(),
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.enter, meta: false): attemptLogin,
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(
+          child: Container(
+            decoration: createWhiteBorder(),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: useLoginScreen ? createLoginScreen() : createCreateAccountScreen(),
+            ),
+            // ),
           ),
-          // ),
         ),
       ),
     );
@@ -284,16 +290,8 @@ class _LoginState extends ConsumerState<Login> {
                   elevation: 0,
                   shape: createWhiteRoundedBorder(),
                 ),
-                onPressed: () async {
-                  if (emailTextController.text.isNotEmpty &&
-                      passwordTextController.text.isNotEmpty) {
-                    if (await login(emailTextController.text, passwordTextController.text)) {
-                      if (!mounted) return;
-                      widget.onResult(true);
-                    } else {
-                      // widget.onResult(false);
-                    }
-                  }
+                onPressed: () {
+                  attemptLogin();
                 },
                 child: const Text('Google SignIn'),
               ),
@@ -429,5 +427,17 @@ class _LoginState extends ConsumerState<Login> {
     }
 
     return false;
+  }
+
+  void attemptLogin() async {
+    if (emailTextController.text.isNotEmpty &&
+        passwordTextController.text.isNotEmpty) {
+      if (await login(emailTextController.text, passwordTextController.text)) {
+        if (!mounted) return;
+        widget.onResult(true);
+      } else {
+        // widget.onResult(false);
+      }
+    }
   }
 }

@@ -1,6 +1,6 @@
 {
-    "name": "todo_master",
-    "short_name": "todo_master",
+    "name": "Memory Note Organizer",
+    "short_name": "Memory Note Organizer",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

@@ -31,7 +31,7 @@ class TodoFileTableHandler {
       // this.localRepo,
       this.todoManager, this.categoryTableHandler, this.currentStateTableHandler);
 
-  Future<TodoFile?> addNewTodoFile(TodoFile todoFile) async {
+  Future<TodoFile> addNewTodoFile(TodoFile todoFile) async {
     final result = await databaseRepository.addEntry(
         todoFileTableData, TodoFileTableEntry(todoFile));
 
@@ -39,7 +39,7 @@ class TodoFileTableHandler {
       case Success(data: final data):
         if (data == null) {
           logError( 'addNewTodoFile: TodoFile is null');
-          return null;
+          return todoFile;
         }
         final updatedCategories = await addCategories(data.id!, data.categories);
         final updateTodoFile = data.copyWith(
@@ -54,7 +54,7 @@ class TodoFileTableHandler {
       case ErrorMessage(message: final message, code: _):
         logError( message!);
     }
-    return null;
+    return todoFile;
   }
 
   Future<List<Category>> addCategories(
@@ -73,22 +73,22 @@ class TodoFileTableHandler {
     final result =
         await databaseRepository.readEntry(todoFileTableData, todoFileId);
     switch (result) {
-      case Success(data: TodoFile? data):
-        if (data == null) {
+      case Success(data: TodoFile? todoFile):
+        if (todoFile == null) {
           logError( 'loadTodoFileCategoriesAndTodos: TodoFile not found for $todoFileId');
           return null;
         }
-        final categories = await categoryTableHandler.getCategoriesWithFileId(data.id!);
+        final categories = await categoryTableHandler.getCategoriesAndTodosWithFileId(todoFile.id!);
         if (categories.isNotEmpty) {
-          data =
-              data.copyWith(categories: categories, lastUpdated: DateTime.now());
+          todoFile =
+              todoFile.copyWith(categories: categories);
         }
         if (loadRemoteFilesFirst) {
-          todoManager?.addTodoFileNow(data);
+          todoManager?.addTodoFileNow(todoFile);
         } else {
-          remoteTodoFiles.addTodoFile(data);
+          remoteTodoFiles.addTodoFile(todoFile);
         }
-        return data;
+        return todoFile;
       case Failure(error: final error):
         logError( error.toString());
       case ErrorMessage(message: final message, code: _):
@@ -178,7 +178,7 @@ class TodoFileTableHandler {
     return result;
   }
 
-  Future updateTodoFile(TodoFile todoFile) async {
+  Future<TodoFile?> updateTodoFile(TodoFile todoFile) async {
     todoFile = todoFile.copyWith(lastUpdated: DateTime.now());
     todoManager?.updateTodoFile(todoFile);
     final result = await databaseRepository.updateTableEntry(

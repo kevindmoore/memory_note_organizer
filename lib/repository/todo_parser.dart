@@ -13,7 +13,7 @@ class TodoParser {
       final category = parseCategory(categoryElement);
       categories.add(category);
     }
-    return TodoFile(name: fileName, categories: categories,lastUpdated: DateTime.now());
+    return TodoFile(name: fileName, categories: categories, lastUpdated: DateTime.now());
   }
 
   Category parseCategory(XmlElement categoryElement) {
