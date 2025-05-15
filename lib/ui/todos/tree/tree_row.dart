@@ -86,6 +86,50 @@ class _TreeRowState extends ConsumerState<TreeRow> {
               mainAxisSize: MainAxisSize.max,
               children: [
                 const SizedBox(width: 4),
+                widget.entry.hasChildren
+                    ? GestureDetector(
+                      onTap: () {
+                        widget.treeController.toggleExpansion(node);
+                      }, // Your onPressed logic
+                      child: Tooltip(
+                        message: 'Expand/Collapse',
+                        child: SizedBox(
+                          width: 36,
+                          height: 36,
+                          child: Icon(
+                            size: 36,
+                            widget.entry.isExpanded ? Icons.arrow_left : Icons.arrow_right,
+                            color: theme.textColor,
+                          ),
+                        ),
+                      ),
+                    )
+                    // Container(
+                    //   color: Colors.blue,
+                    //       child: IconButton(
+                    //                         constraints: BoxConstraints.tightFor(
+                    //       width: 36, // Match iconSize
+                    //       height: 36, // Match iconSize
+                    //                         ),
+                    //         iconSize: 36,
+                    //         // padding: EdgeInsets.zero,
+                    //         tooltip: 'Expand/Collapse',
+                    //         onPressed: () {
+                    //           widget.treeController.toggleExpansion(node);
+                    //         },
+                    //         icon: Icon(widget.entry.isExpanded ? Icons.arrow_left : Icons.arrow_right, color: theme.textColor),
+                    //         style: IconButton.styleFrom(
+                    //           // Still set padding to zero for clarity
+                    //           padding: EdgeInsets.zero,
+                    //           // Ensure minimum size is zero
+                    //           minimumSize: Size.zero,
+                    //           // THIS IS THE KEY for removing implicit tap target padding:
+                    //           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    //         ),
+                    //       ),
+                    //     )
+                    : SizedBox.shrink(),
+
                 Expanded(
                   child: Focus(
                     focusNode: widget.treeRowFocusNode,

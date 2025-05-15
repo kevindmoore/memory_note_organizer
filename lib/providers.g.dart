@@ -155,5 +155,41 @@ final dialogStateProvider = Provider<DialogState>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef DialogStateRef = ProviderRef<DialogState>;
+String _$connectivityManagerHash() =>
+    r'b26e2fb7f5e406b5eda9a5babfca589afc1556b1';
+
+/// See also [connectivityManager].
+@ProviderFor(connectivityManager)
+final connectivityManagerProvider = Provider<ConnectivityManager>.internal(
+  connectivityManager,
+  name: r'connectivityManagerProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$connectivityManagerHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef ConnectivityManagerRef = ProviderRef<ConnectivityManager>;
+String _$appStateNotifierHash() => r'faae72dcb711624338a132351c234854e5f2bfdf';
+
+/// See also [AppStateNotifier].
+@ProviderFor(AppStateNotifier)
+final appStateNotifierProvider =
+    NotifierProvider<AppStateNotifier, AppState>.internal(
+      AppStateNotifier.new,
+      name: r'appStateNotifierProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$appStateNotifierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$AppStateNotifier = Notifier<AppState>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

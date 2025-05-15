@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:memory_notes_organizer/theme/theme.dart';
+import 'package:utilities/utilities.dart';
 
 
-Widget loadingWidget() {
-  return const Center(child: CircularProgressIndicator());
+Widget loadingWidget(ThemeColors theme) {
+  return Container(
+      decoration: createGradient(theme.startGradientColor, theme.endGradientColor),
+      child: const Center(child: CircularProgressIndicator()));
 }
 /*
 Widget createNewPopup(

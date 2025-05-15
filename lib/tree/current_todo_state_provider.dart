@@ -112,6 +112,10 @@ class CurrentTodoStateProvider extends StateNotifier<CurrentTodoState> {
         currentState = currentState.copyWith(currentCategory: null, currentTodo: null, currentlySelectedIndex: index);
         break;
       case NodeType.category:
+        TodoFile? currentlySelectedTodoFile = todoRepository.findTodoFile(node.todoInfo.todoFileId);
+        if (currentlySelectedTodoFile != null) {
+          currentState = currentState.copyWith(currentTodoFile: currentlySelectedTodoFile);
+        }
         Category? currentlySelectedCategory = todoRepository.findCategory(
             node.todoInfo.todoFileId, node.todoInfo.categoryId);
         if (currentlySelectedCategory == null) {
@@ -129,7 +133,10 @@ class CurrentTodoStateProvider extends StateNotifier<CurrentTodoState> {
         currentState = currentState.copyWith(currentTodoFile: null, currentCategory: null, currentTodo: null, );
         break;
       case NodeType.todo:
-        currentState = currentState.copyWith(currentTodoFile: null, currentCategory: null, currentTodo: null, currentlySelectedIndex: -1 );
+        TodoFile? currentlySelectedTodoFile = todoRepository.findTodoFile(node.todoInfo.todoFileId);
+        Category? currentlySelectedCategory = todoRepository.findCategory(
+            node.todoInfo.todoFileId, node.todoInfo.categoryId);
+        currentState = currentState.copyWith(currentTodoFile: currentlySelectedTodoFile, currentCategory: currentlySelectedCategory, currentTodo: null, currentlySelectedIndex: -1 );
         var foundTodo = todoRepository.findTodoFromCategory(
             node.todoInfo.todoFileId, node.todoInfo.categoryId, node.id);
         foundTodo ??= todoRepository.findTodoInParentTodo(

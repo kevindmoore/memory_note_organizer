@@ -51,7 +51,7 @@ class TodoActions {
           }
         }
         var todoRepository = ref.read(todoRepositoryProvider);
-        await todoRepository.deleteTodosAndChildren(currentTodoState.currentTodo!, true);
+        await todoRepository.deleteTodosAndChildren(currentTodoState.currentTodo!, false);
       }
     }, null);
   }
@@ -121,8 +121,8 @@ class TodoActions {
               if (parentNode != null) {
                 var todoNode = treeViewModel.createCategoryTodoNode(parentNode, updatedTodo);
                 parentNode.addChildNode(todoNode);
-                treeController.rebuild();
-                treeController.expand(parentNode);
+                treeController.collapseAll();
+                treeController.expandAncestors(todoNode);
                 ref.read(currentTodoStateProvider.notifier).selectNode(todoNode, -1);
                 final index = todoNode.findNodeIndex(rootNode, todoNode.id);
                 if (index != -1) {
@@ -132,8 +132,8 @@ class TodoActions {
             } else if (categoryNode != null) {
               var todoNode = treeViewModel.createCategoryTodoNode(categoryNode, updatedTodo);
               categoryNode.addChildNode(todoNode);
-              treeController.expand(categoryNode);
-              treeController.rebuild();
+              treeController.collapseAll();
+              treeController.expandAncestors(todoNode);
               ref.read(currentTodoStateProvider.notifier).selectNode(todoNode, -1);
               final index = todoNode.findNodeIndex(rootNode, todoNode.id);
               if (index != -1) {
@@ -377,9 +377,11 @@ class TodoActions {
     var todoRepository = ref.read(todoRepositoryProvider);
     CurrentTodoState currentTodoState = ref.read(currentTodoStateProvider);
     if (currentTodoState.currentTodoFile != null) {
-      await todoRepository.reloadTodoFile(currentTodoState.currentTodoFile!.id!);
-      viewModel.rebuildFileNode(currentTodoState.currentTodoFile!);
-      treeController.rebuild();
+      final todoFile = await todoRepository.reloadTodoFile(currentTodoState.currentTodoFile!.id!);
+      if (todoFile != null) {
+        viewModel.rebuildFileNode(todoFile);
+        treeController.rebuild();
+      }
     }
   }
 
@@ -427,10 +429,13 @@ class TodoActions {
               var findTodoFile = todoRepository.findTodoFile(currentTodoState.currentTodoFile!.id!);
               if (findTodoFile != null) {
                 findTodoFile = todoRepository.addCategoryToTodoFile(findTodoFile, newCategory);
+                todoRepository.updateTodoFile(findTodoFile);
+                var createCategoryNode = viewModel.createCategoryNode(todoFileNode, findTodoFile, newCategory);
                 todoFileNode.addChildNode(
-                  viewModel.createCategoryNode(todoFileNode, findTodoFile, newCategory),
+                  createCategoryNode,
                 );
                 treeController.expand(todoFileNode);
+                ref.read(currentTodoStateProvider.notifier).selectNode(createCategoryNode, -1);
               }
               treeController.rebuild();
             }

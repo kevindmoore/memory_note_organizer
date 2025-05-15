@@ -497,11 +497,12 @@ class TodoRepository extends ChangeNotifier {
     _notify();
   }
 
-  Future reloadTodoFile(int todoFileId) async {
+  Future<TodoFile?> reloadTodoFile(int todoFileId) async {
     final todoFile = await loadTodoFileCategoriesAndTodos(todoFileId);
     if (todoFile != null) {
       todoManager.addTodoFile(todoFile);
     }
+    return todoFile;
   }
 
   void replaceTodoFile(TodoFile todoFile) async {

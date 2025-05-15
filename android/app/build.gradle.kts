@@ -8,7 +8,7 @@ plugins {
 android {
     namespace = "com.mastertechsoftware.memory_notes_organizer"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = "27.0.12077973" // flutter.ndkVersion
+    ndkVersion = "28.0.13004108" // flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

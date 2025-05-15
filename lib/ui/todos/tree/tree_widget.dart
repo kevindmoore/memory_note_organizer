@@ -126,7 +126,7 @@ class _TreeWidgetState extends ConsumerState<TreeWidget> with AutomaticKeepAlive
       setState(() {});
     });
     if (loading) {
-      return loadingWidget();
+      return loadingWidget(theme);
     }
     return FocusDetector(
       onFocusGained: onFocusGained,

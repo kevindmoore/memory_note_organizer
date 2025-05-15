@@ -22,7 +22,7 @@ Future main() async {
   globalSharedPreferences = await SharedPreferences.getInstance();
   final secrets = await SecretLoader(secretPath: 'assets/secrets.json').load();
   configuration = Configuration();
-  await configuration.initialize(secrets.url, secrets.apiKey, secrets.apiSecret);
+  await configuration.initialize(secrets.url, secrets.apiKey, secrets.apiSecret, null);
 
   if (isDesktop()) {
     await DesktopWindow.setWindowSize(const Size(700, 600));
@@ -42,6 +42,12 @@ class MainApp extends ConsumerStatefulWidget {
 
 class _MainAppState extends ConsumerState<MainApp> {
   var initialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    ref.read(connectivityManagerProvider).startMonitoring();
+  }
 
   @override
   Widget build(BuildContext context) {

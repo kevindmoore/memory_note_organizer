@@ -2,7 +2,7 @@ name: memory_notes_organizer
 description: "Note and Todo Application"
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.0.0+1
+version: 1.0.1+2
 
 environment:
   sdk: '>=3.7.0 <4.0.0'
@@ -45,6 +45,7 @@ dependencies:
   flutter_expandable_fab: ^2.4.1
   flutter_native_splash: ^2.4.6
   flutter_launcher_icons: ^0.14.3
+  connectivity_plus: ^6.1.4
 
 
 dev_dependencies:

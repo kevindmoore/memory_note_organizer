@@ -1,6 +1,8 @@
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:memory_notes_organizer/services/connectivity_manager.dart';
+import 'package:memory_notes_organizer/ui/app_state.dart';
 import 'package:memory_notes_organizer/ui/todos/todo_actions.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supa_manager/supa_manager.dart';
@@ -155,6 +157,33 @@ class CurrentFilesNotifier extends Notifier<List<TodoFile>> {
   }
 
   List<TodoFile> getTodoFiles() => state;
+}
+
+@Riverpod(keepAlive: true)
+ConnectivityManager connectivityManager(Ref ref) => ConnectivityManager(ref);
+
+@Riverpod(keepAlive: true)
+class AppStateNotifier extends _$AppStateNotifier {
+  @override
+  AppState build() {
+    return const AppState();
+  }
+
+  void setCurrentState(AppState appState) {
+    state = appState;
+  }
+
+  AppState getCurrentState() {
+    return state;
+  }
+
+  void setNetwork(bool available) {
+    state = state.copyWith(networkAvailable: available);
+  }
+
+  void resetState() {
+    state = const AppState();
+  }
 }
 
 final currentFilesProvider = NotifierProvider<CurrentFilesNotifier, List<TodoFile>>(() {

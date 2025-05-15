@@ -158,6 +158,12 @@ class Node extends Equatable {
     }
     Node? currentParentNode = foundNode.previous;
     Node? currentNode = foundNode;
+    if (currentParentNode == null) {
+      final index = rootNode.children.indexWhere(
+            (node) => node.id == currentNode!.id!,
+      );
+      return index;
+    }
     while (currentParentNode != null && currentParentNode != rootNode) {
       switch (currentParentNode.type) {
         case NodeType.root:
